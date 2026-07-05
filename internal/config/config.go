@@ -11,6 +11,8 @@ const (
 	ESIMTransportAT            = "at"
 	ESIMTransportQMI           = "qmi"
 	ESIMTransportMBIM          = "mbim"
+	ModuleVendorQuectel        = "quectel"
+	ModuleVendorSIMCOM         = "simcom"
 	MBIMTransportAuto          = "auto"
 	MBIMTransportProxy         = "proxy"
 	MBIMTransportDirect        = "direct"
@@ -36,6 +38,26 @@ func ValidateESIMTransport(in string) error {
 		return nil
 	default:
 		return fmt.Errorf("invalid esim transport: %q", strings.TrimSpace(in))
+	}
+}
+
+func NormalizeModuleVendor(in string) string {
+	switch strings.ToLower(strings.TrimSpace(in)) {
+	case "", "auto", ModuleVendorQuectel:
+		return ModuleVendorQuectel
+	case ModuleVendorSIMCOM, "sim-com", "sim_com":
+		return ModuleVendorSIMCOM
+	default:
+		return strings.ToLower(strings.TrimSpace(in))
+	}
+}
+
+func ValidateModuleVendor(in string) error {
+	switch NormalizeModuleVendor(in) {
+	case ModuleVendorQuectel, ModuleVendorSIMCOM:
+		return nil
+	default:
+		return fmt.Errorf("invalid module vendor: %q", strings.TrimSpace(in))
 	}
 }
 
@@ -260,10 +282,10 @@ type DeviceConfig struct {
 	USBPath       string `mapstructure:"-"` // Deprecated: 运行时按 IMEI 现解析,绝不从文件读取
 	ATPort        string `mapstructure:"-"` // Deprecated: 运行时解析;AT 终端用 Worker.ResolvedATPort()
 	ProxyPort     int    `mapstructure:"proxy_port"`
-	ManagePort    string `mapstructure:"-"` // Deprecated: 运行时解析,绝不从文件读取
-	Interface     string `mapstructure:"-"` // Deprecated: 运行时解析,绝不从文件读取
-	QMIDevice     string `mapstructure:"-"` // Deprecated: 运行时解析,绝不从文件读取
-	ControlDevice string `mapstructure:"-"` // Deprecated: 运行时按 IMEI 现解析,绝不从文件读取
+	ManagePort    string `mapstructure:"-"`              // Deprecated: 运行时解析,绝不从文件读取
+	Interface     string `mapstructure:"-"`              // Deprecated: 运行时解析,绝不从文件读取
+	QMIDevice     string `mapstructure:"-"`              // Deprecated: 运行时解析,绝不从文件读取
+	ControlDevice string `mapstructure:"-"`              // Deprecated: 运行时按 IMEI 现解析,绝不从文件读取
 	MBIMTransport string `mapstructure:"mbim_transport"` // MBIM 传输: auto|proxy|direct，默认 auto
 	QMIUseProxy   bool   `mapstructure:"qmi_use_proxy"`  // 是否通过 libqmi qmi-proxy 打开 QMI 控制口
 	// 可选：qmi-proxy abstract socket 名称和可执行文件路径。留空使用 quectel-qmi-go 默认值。
@@ -271,7 +293,8 @@ type DeviceConfig struct {
 	QMIProxyExecutable string `mapstructure:"qmi_proxy_executable"`
 	ESIMTransport      string `mapstructure:"esim_transport"` // eSIM 传输通道: at|qmi|mbim，默认 at
 	DeviceBackend      string `mapstructure:"device_backend"` // 设备后端模式: at|qmi|mbim|auto，默认 at
-	USBNetMode         *int   `mapstructure:"usbnet_mode"`    // 可选：用于校验/设置 Quectel USBNET 模式
+	ModuleVendor       string `mapstructure:"module_vendor"`  // AT 方言: quectel|simcom，默认 quectel 以保持兼容
+	USBNetMode         *int   `mapstructure:"usbnet_mode"`    // 可选：用于校验/设置厂商 USB 网络模式
 	// ESIMSwitch controls deterministic eSIM switch behavior. Zero values preserve current behavior.
 	ESIMSwitch ESIMSwitchConfig `mapstructure:"esim_switch"`
 

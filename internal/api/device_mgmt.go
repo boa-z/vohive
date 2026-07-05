@@ -52,6 +52,7 @@ type deviceConfigDTO struct {
 	NetworkEnabled        bool    `json:"network_enabled"`
 	VoWiFiEnabled         bool    `json:"vowifi_enabled"`
 	DeviceBackend         string  `json:"device_backend,omitempty"`
+	ModuleVendor          string  `json:"module_vendor,omitempty"`
 }
 
 func deviceConfigToDTO(c config.DeviceConfig) deviceConfigDTO {
@@ -81,6 +82,7 @@ func deviceConfigToDTO(c config.DeviceConfig) deviceConfigDTO {
 		NetworkEnabled:        c.NetworkEnabled,
 		VoWiFiEnabled:         c.VoWiFiEnabled,
 		DeviceBackend:         c.DeviceBackend,
+		ModuleVendor:          config.NormalizeModuleVendor(c.ModuleVendor),
 	}
 }
 
@@ -136,6 +138,7 @@ func deviceConfigFromDTOWithBase(d deviceConfigDTO, base *config.DeviceConfig) c
 		NetworkEnabled:        d.NetworkEnabled,
 		VoWiFiEnabled:         d.VoWiFiEnabled,
 		DeviceBackend:         d.DeviceBackend,
+		ModuleVendor:          config.NormalizeModuleVendor(d.ModuleVendor),
 	}
 }
 
@@ -1367,6 +1370,7 @@ func (s *Server) handleDeviceMgmtUpdateDevice(c *gin.Context) {
 
 	// 检测 DeviceBackend 状态变化，或 VoWiFi 从开启变为关闭都需要彻底重建 Worker 释放残余句柄
 	needsRebuild := oldCfg.DeviceBackend != newCfg.DeviceBackend ||
+		config.NormalizeModuleVendor(oldCfg.ModuleVendor) != config.NormalizeModuleVendor(newCfg.ModuleVendor) ||
 		qmiProxyConfigChanged(oldCfg, newCfg) ||
 		(!newCfg.VoWiFiEnabled && oldCfg.VoWiFiEnabled) ||
 		(worker != nil && managedNetworkConfigChanged(oldCfg, newCfg))
@@ -1462,6 +1466,9 @@ func validateDeviceBackendConfig(cfg config.DeviceConfig) error {
 		// 合法值
 	default:
 		return fmt.Errorf("不支持的 device_backend: %q，可选值: at, qmi, mbim", backend)
+	}
+	if err := config.ValidateModuleVendor(cfg.ModuleVendor); err != nil {
+		return fmt.Errorf("不支持的 module_vendor: %q，可选值: quectel, simcom", strings.TrimSpace(cfg.ModuleVendor))
 	}
 	return nil
 }

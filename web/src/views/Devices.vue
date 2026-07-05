@@ -106,7 +106,8 @@ const addConfig = ref<DeviceConfigDTO>({
   esim_transport: 'at',
   at_port: '',
   control_device: '',
-  device_backend: 'at'
+  device_backend: 'at',
+  module_vendor: 'quectel'
 })
 
 const discovering = ref(false)
@@ -963,7 +964,8 @@ function openAddDialog() {
     esim_transport: 'at',
     at_port: '',
     control_device: '',
-    device_backend: 'at'
+    device_backend: 'at',
+    module_vendor: 'quectel'
   }
   refreshDiscoveredForAdd()
 }
@@ -997,6 +999,9 @@ function applyDiscoveredToAddConfig(d: DiscoveredDevice | null) {
     addConfig.value.device_backend = 'qmi'
   } else {
     addConfig.value.device_backend = 'at'
+  }
+  if (!addConfig.value.module_vendor) {
+    addConfig.value.module_vendor = 'quectel'
   }
 }
 

@@ -144,6 +144,7 @@ export type DeviceConfigDTO = {
   qmi_proxy_executable?: string
   vowifi_enabled?: boolean
   device_backend?: 'at' | 'qmi' | 'mbim'
+  module_vendor?: 'quectel' | 'simcom'
   operator_selection_mode?: string
   operator_selection_plmn?: string
   operator_selection_rat?: string

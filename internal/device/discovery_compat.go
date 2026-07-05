@@ -189,7 +189,7 @@ func discoverFallbackOne(usbPath string) (CompatibleModem, bool) {
 		}, true
 	}
 
-	if vid != 0x2c7c && vid != 0x05c6 {
+	if vid != 0x2c7c && vid != 0x05c6 && !isSIMCOMUSBID(vid, pid) {
 		return CompatibleModem{}, false
 	}
 

@@ -182,6 +182,20 @@ watch(
           <el-option v-if="isMBIMBackendOnly" label="MBIM" value="mbim" />
         </el-select>
       </div>
+      <div class="flex items-center justify-between p-3 rounded-xl border border-gray-200 bg-gray-50">
+        <div>
+          <div class="text-sm font-bold text-gray-800">模组厂商</div>
+          <div class="text-xs text-gray-500">Quectel / SIMCOM</div>
+        </div>
+        <el-select
+          v-model="addConfig.module_vendor"
+          style="width: 110px"
+          placeholder="Quectel"
+        >
+          <el-option label="Quectel" value="quectel" />
+          <el-option label="SIMCOM" value="simcom" />
+        </el-select>
+      </div>
     </div>
 
     <template #footer>

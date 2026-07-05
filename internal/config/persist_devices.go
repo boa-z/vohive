@@ -37,6 +37,11 @@ func UpdateDeviceInFile(path string, deviceID string, newDevice DeviceConfig) er
 			deleteMapKey(n, "modem_imei")
 		}
 		setMapScalar(n, "device_backend", newDevice.DeviceBackend)
+		if strings.TrimSpace(newDevice.ModuleVendor) != "" && NormalizeModuleVendor(newDevice.ModuleVendor) != ModuleVendorQuectel {
+			setMapScalar(n, "module_vendor", NormalizeModuleVendor(newDevice.ModuleVendor))
+		} else {
+			deleteMapKey(n, "module_vendor")
+		}
 		if newDevice.QMIUseProxy {
 			setMapBool(n, "qmi_use_proxy", true)
 		} else {
@@ -173,6 +178,9 @@ func deviceConfigToNode(d DeviceConfig) *yaml.Node {
 	}
 	if d.DeviceBackend != "" {
 		appendMapScalar(m, "device_backend", d.DeviceBackend)
+	}
+	if strings.TrimSpace(d.ModuleVendor) != "" && NormalizeModuleVendor(d.ModuleVendor) != ModuleVendorQuectel {
+		appendMapScalar(m, "module_vendor", NormalizeModuleVendor(d.ModuleVendor))
 	}
 	if d.QMIUseProxy {
 		appendMapBool(m, "qmi_use_proxy", true)

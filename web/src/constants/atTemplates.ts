@@ -27,6 +27,16 @@ export const AT_TEMPLATES: ATTemplateGroup[] = [
     ]
   },
   {
+    label: 'SIMCOM',
+    items: [
+      { label: 'ICCID (AT+CICCID)', value: 'AT+CICCID' },
+      { label: '系统信息 (AT+CPSI?)', value: 'AT+CPSI?' },
+      { label: '网络模式 (AT+CNSMOD?)', value: 'AT+CNSMOD?' },
+      { label: 'USB PID (AT+CUSBPIDSWITCH?)', value: 'AT+CUSBPIDSWITCH?' },
+      { label: 'USB Audio (AT+CPCMREG?)', value: 'AT+CPCMREG?' }
+    ]
+  },
+  {
     label: '网络控制',
     items: [
       { label: '飞行模式 ON (AT+CFUN=0)', value: 'AT+CFUN=0' },

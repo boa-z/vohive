@@ -82,6 +82,13 @@ func TestParseQCCID(t *testing.T) {
 	}
 }
 
+func TestParseICCID(t *testing.T) {
+	resp := "\r\n+ICCID: 898600700907A6019125F\r\n\r\nOK\r\n"
+	if got := parseICCID(resp); got != "898600700907A6019125" {
+		t.Fatalf("parseICCID()=%q", got)
+	}
+}
+
 func TestExtractSMSPDUAfterPrefixTrimsCMGRPadding(t *testing.T) {
 	valid := "079144872000302320048102020000625061028204401AD9775D0E72D7DBE2B21C949E8360B75A4E7683D16AB71B"
 	resp := "\r\n+CMGR: 0,,38\r\n" + valid + strings.Repeat("00", 64) + "\r\n\r\nOK\r\n"
@@ -115,6 +122,25 @@ func TestParseServingCellLTEInfoIncludesRadio(t *testing.T) {
 	}
 	if info.RSRP != -75 || info.RSRQ != -8 || info.SINR != 11 || info.Duplex != "FDD" || info.Band != "LTE BAND 8" || info.Channel != 3740 {
 		t.Fatalf("parseServingCellLTEInfo()=%+v", info)
+	}
+}
+
+func TestParseCPSIServingCellLTEInfo(t *testing.T) {
+	resp := "\r\n+CPSI: LTE,Online,460-01,0x182d,12345678,132,LTE BAND 8,3740,5,5,-85,-950,-650,112\r\n\r\nOK\r\n"
+	info, ok := parseCPSIServingCellLTEInfo(resp)
+	if !ok {
+		t.Fatal("parseCPSIServingCellLTEInfo() ok=false")
+	}
+	if info.RSRP != -95 || info.RSRQ != -8 || info.SINR != 11 || info.Band != "LTE BAND 8" || info.Channel != 3740 {
+		t.Fatalf("parseCPSIServingCellLTEInfo()=%+v", info)
+	}
+}
+
+func TestParseCPSINetworkRadio(t *testing.T) {
+	resp := "\r\n+CPSI: LTE,Online,460-01,0x182d,12345678,132,LTE BAND 8,3740,5,5,-85,-950,-650,112\r\n\r\nOK\r\n"
+	mode, duplex, band, channel := parseCPSINetworkRadio(resp)
+	if mode != "LTE" || duplex != "" || band != "LTE BAND 8" || channel != 3740 {
+		t.Fatalf("parseCPSINetworkRadio()=(%q,%q,%q,%d)", mode, duplex, band, channel)
 	}
 }
 

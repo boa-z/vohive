@@ -27,17 +27,22 @@ func (m *Manager) QueryFirmware() (string, error) {
 }
 
 func (m *Manager) QuerySIMInserted() (bool, error) {
-	if resp, err := m.ExecuteATSilent("AT+QSIMSTAT?", 2*time.Second); err == nil {
-		if inserted, ok := parseQSIMSTATInserted(resp); ok {
+	var lastErr error
+	for _, cmd := range m.dialect.SIMInsertedCommands {
+		if strings.TrimSpace(cmd.Command) == "" || cmd.Parse == nil {
+			continue
+		}
+		resp, err := m.ExecuteATSilent(cmd.Command, 2*time.Second)
+		if err != nil {
+			lastErr = err
+			continue
+		}
+		if inserted, ok := cmd.Parse(resp); ok {
 			return inserted, nil
 		}
 	}
-	resp, err := m.ExecuteATSilent("AT+CPIN?", 2*time.Second)
-	if err != nil {
-		return false, err
-	}
-	if inserted, ok := parseCPINInserted(resp); ok {
-		return inserted, nil
+	if lastErr != nil {
+		return false, lastErr
 	}
 	return false, nil
 }
@@ -51,11 +56,24 @@ func (m *Manager) QueryIMSI() (string, error) {
 }
 
 func (m *Manager) QueryICCID() (string, error) {
-	resp, err := m.ExecuteATSilent("AT+QCCID", 2*time.Second)
-	if err != nil {
-		return "", err
+	var lastErr error
+	for _, cmd := range m.dialect.ICCIDCommands {
+		if strings.TrimSpace(cmd.Command) == "" || cmd.Parse == nil {
+			continue
+		}
+		resp, err := m.ExecuteATSilent(cmd.Command, 2*time.Second)
+		if err != nil {
+			lastErr = err
+			continue
+		}
+		if iccid := cmd.Parse(resp); iccid != "" {
+			return iccid, nil
+		}
 	}
-	return parseQCCID(resp), nil
+	if lastErr != nil {
+		return "", lastErr
+	}
+	return "", nil
 }
 
 func (m *Manager) QueryOperator() (string, error) {
@@ -100,11 +118,14 @@ func (m *Manager) QueryServingCellLTE() (int, int, error) {
 }
 
 func (m *Manager) QueryServingCellLTEInfo() (ServingCellLTEInfo, error) {
-	resp, err := m.ExecuteATSilent("AT+QENG=\"servingcell\"", 3*time.Second)
+	if strings.TrimSpace(m.dialect.ServingCellCommand) == "" || m.dialect.ParseServingCell == nil {
+		return ServingCellLTEInfo{}, nil
+	}
+	resp, err := m.ExecuteATSilent(m.dialect.ServingCellCommand, 3*time.Second)
 	if err != nil {
 		return ServingCellLTEInfo{}, err
 	}
-	info, ok := parseServingCellLTEInfo(resp)
+	info, ok := m.dialect.ParseServingCell(resp)
 	if !ok {
 		return ServingCellLTEInfo{}, nil
 	}
@@ -120,11 +141,14 @@ func (m *Manager) QueryAPN() (string, error) {
 }
 
 func (m *Manager) QueryIMSStatus() (int, error) {
-	resp, err := m.ExecuteATSilent("AT+QIMS?", 2*time.Second)
+	if strings.TrimSpace(m.dialect.IMSStatusCommand) == "" || m.dialect.ParseIMSStatus == nil {
+		return 0, nil
+	}
+	resp, err := m.ExecuteATSilent(m.dialect.IMSStatusCommand, 2*time.Second)
 	if err != nil {
 		return 0, err
 	}
-	v, _ := parseQIMS(resp)
+	v, _ := m.dialect.ParseIMSStatus(resp)
 	return v, nil
 }
 
@@ -134,11 +158,14 @@ func (m *Manager) QueryNetworkModeAndDuplex() (string, string, error) {
 }
 
 func (m *Manager) QueryNetworkRadio() (string, string, string, uint32, error) {
-	resp, err := m.ExecuteATSilent("AT+QNWINFO", 2*time.Second)
+	if strings.TrimSpace(m.dialect.NetworkRadioCommand) == "" || m.dialect.ParseNetworkRadio == nil {
+		return "", "", "", 0, nil
+	}
+	resp, err := m.ExecuteATSilent(m.dialect.NetworkRadioCommand, 2*time.Second)
 	if err != nil {
 		return "", "", "", 0, err
 	}
-	mode, duplex, band, channel := parseQNWInfoRadio(resp)
+	mode, duplex, band, channel := m.dialect.ParseNetworkRadio(resp)
 	return mode, duplex, band, channel, nil
 }
 
@@ -222,11 +249,14 @@ func (m *Manager) QueryMSISDN() (string, error) {
 
 // QueryUSBNetMode 查询 USBNET 模式
 func (m *Manager) QueryUSBNetMode() (int, error) {
-	resp, err := m.ExecuteATSilent("AT+QCFG=\"usbnet\"?", 2*time.Second)
+	if strings.TrimSpace(m.dialect.USBNetQueryCommand) == "" || m.dialect.ParseUSBNet == nil {
+		return -1, nil
+	}
+	resp, err := m.ExecuteATSilent(m.dialect.USBNetQueryCommand, 2*time.Second)
 	if err != nil {
 		return -1, err
 	}
-	mode, ok := parseUSBNet(resp)
+	mode, ok := m.dialect.ParseUSBNet(resp)
 	if !ok {
 		return -1, nil
 	}
@@ -235,7 +265,13 @@ func (m *Manager) QueryUSBNetMode() (int, error) {
 
 // SetUSBNetMode 设置 USBNET 模式并重启
 func (m *Manager) SetUSBNetMode(mode int) error {
-	cmd := fmt.Sprintf("AT+QCFG=\"usbnet\",%d", mode)
+	if m.dialect.USBNetSetCommand == nil {
+		return fmt.Errorf("%s 模组不支持通过当前 USBNET 接口设置网络模式", m.dialect.Vendor)
+	}
+	cmd, ok := m.dialect.USBNetSetCommand(mode)
+	if !ok || strings.TrimSpace(cmd) == "" {
+		return fmt.Errorf("%s 模组不支持 USBNET 模式 %d", m.dialect.Vendor, mode)
+	}
 	_, err := m.ExecuteAT(cmd, 5*time.Second)
 	if err != nil {
 		return fmt.Errorf("设置 USBNET 模式失败: %w", err)

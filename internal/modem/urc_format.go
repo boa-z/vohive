@@ -214,6 +214,13 @@ func (m *Manager) formatURC(line string) urcFormatResult {
 		out.Fields = append(out.Fields, "state", strings.TrimSpace(rest))
 		return out
 
+	case "+CPCMREG":
+		rest := parseURCAfterColon(s)
+		out.Level = urcLogInfo
+		out.Msg = "URC: USB Audio 状态"
+		out.Fields = append(out.Fields, "state", strings.TrimSpace(rest))
+		return out
+
 	default:
 		switch s {
 		case "RING", "RDY", "SMS Ready", "Call Ready", "NORMAL POWER DOWN", "NO CARRIER", "BUSY", "NO ANSWER":

@@ -2496,7 +2496,10 @@ components:
           type: boolean
         device_backend:
           type: string
-          enum: [at, qmi]
+          enum: [at, qmi, mbim]
+        module_vendor:
+          type: string
+          enum: [quectel, simcom]
 
     DeviceMgmtListModem:
       type: object

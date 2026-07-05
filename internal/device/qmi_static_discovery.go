@@ -167,6 +167,8 @@ func discoverQMIDeviceFromSysFS(usbPath string) (*QMIDevice, error) {
 		}
 	} else if vid == 0x05c6 {
 		atIntf = 2
+	} else if isSIMCOMUSBID(vid, pid) {
+		atIntf = 2
 	}
 
 	// discovery 阶段保留该设备下的全部 AT 候选口，避免过早做主观裁剪。
@@ -185,6 +187,21 @@ func discoverQMIDeviceFromSysFS(usbPath string) (*QMIDevice, error) {
 	md.AudioDevice, md.AudioCardNum = findAudioDevice(scanUSBPath)
 
 	return md, nil
+}
+
+func isSIMCOMUSBID(vid uint16, pid uint16) bool {
+	if vid != 0x1e0e {
+		return false
+	}
+	switch pid {
+	case 0x9000, 0x9001, 0x9002, 0x9003, 0x9004, 0x9005, 0x9006, 0x9007,
+		0x9011, 0x9016, 0x9018, 0x9019, 0x901a, 0x901b,
+		0x9020, 0x9021, 0x9022, 0x9023, 0x9024, 0x9025, 0x9026, 0x9027,
+		0x9028, 0x9029, 0x902a, 0x902b:
+		return true
+	default:
+		return false
+	}
 }
 
 func discoverWWANQMIDevices() ([]QMIDevice, error) {

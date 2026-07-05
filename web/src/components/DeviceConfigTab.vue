@@ -116,6 +116,22 @@ watch(
           </el-select>
         </div>
       </div>
+      <div class="ui-panel-muted p-3 space-y-2">
+        <div class="flex items-center justify-between">
+          <div>
+            <div class="text-sm font-bold text-gray-800 dark:text-gray-100">模组厂商</div>
+            <div class="text-xs text-gray-500 dark:text-gray-400">Quectel / SIMCOM</div>
+          </div>
+          <el-select
+            v-model="editConfig.module_vendor"
+            style="width: 120px"
+            placeholder="Quectel"
+          >
+            <el-option label="Quectel" value="quectel" />
+            <el-option label="SIMCOM" value="simcom" />
+          </el-select>
+        </div>
+      </div>
     </div>
   </div>
 </template>

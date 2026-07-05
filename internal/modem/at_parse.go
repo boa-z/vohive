@@ -117,6 +117,18 @@ func parseQCCID(resp string) string {
 	if !ok {
 		return ""
 	}
+	return parseICCIDValueAfterColon(line)
+}
+
+func parseICCID(resp string) string {
+	line, ok := findLineWithPrefix(resp, "+ICCID:")
+	if !ok {
+		return ""
+	}
+	return parseICCIDValueAfterColon(line)
+}
+
+func parseICCIDValueAfterColon(line string) string {
 	if idx := strings.IndexByte(line, ':'); idx >= 0 {
 		iccid := strings.TrimSpace(line[idx+1:])
 		iccid = strings.Trim(iccid, "\"")
@@ -273,6 +285,109 @@ func parseServingCellLTEInfo(resp string) (ServingCellLTEInfo, bool) {
 		return ServingCellLTEInfo{}, false
 	}
 	return info, true
+}
+
+func parseCPSIServingCellLTEInfo(resp string) (ServingCellLTEInfo, bool) {
+	line, ok := findLineWithPrefix(resp, "+CPSI:")
+	if !ok || !strings.Contains(line, "LTE") {
+		return ServingCellLTEInfo{}, false
+	}
+	fields := parseCommaFields(strings.TrimSpace(strings.TrimPrefix(line, "+CPSI:")))
+	if len(fields) < 12 || strings.ToUpper(strings.TrimSpace(fields[0])) != "LTE" {
+		return ServingCellLTEInfo{}, false
+	}
+
+	info := ServingCellLTEInfo{}
+	if len(fields) > 6 {
+		info.Band = strings.TrimSpace(fields[6])
+	}
+	if len(fields) > 7 {
+		if channel, err := strconv.ParseUint(strings.TrimSpace(fields[7]), 10, 32); err == nil {
+			info.Channel = uint32(channel)
+		}
+	}
+	if len(fields) > 10 {
+		info.RSRQ = normalizeTenthsSignal(parseIntDefault(fields[10], 0), -30, 0)
+	}
+	if len(fields) > 11 {
+		info.RSRP = normalizeTenthsSignal(parseIntDefault(fields[11], 0), -140, -40)
+	}
+	if len(fields) > 13 {
+		info.SINR = normalizeTenthsSignal(parseIntDefault(fields[13], 0), -50, 50)
+	}
+	if info.RSRP < -140 || info.RSRP > -40 {
+		return ServingCellLTEInfo{}, false
+	}
+	if info.RSRQ < -30 || info.RSRQ > 0 {
+		return ServingCellLTEInfo{}, false
+	}
+	return info, true
+}
+
+func parseCPSINetworkRadio(resp string) (string, string, string, uint32) {
+	line, ok := findLineWithPrefix(resp, "+CPSI:")
+	if !ok {
+		return "", "", "", 0
+	}
+	fields := parseCommaFields(strings.TrimSpace(strings.TrimPrefix(line, "+CPSI:")))
+	if len(fields) == 0 {
+		return "", "", "", 0
+	}
+	mode := strings.ToUpper(strings.TrimSpace(fields[0]))
+	if mode == "NO SERVICE" {
+		return "", "", "", 0
+	}
+	band := ""
+	channel := uint32(0)
+	switch mode {
+	case "LTE":
+		if len(fields) > 6 {
+			band = strings.TrimSpace(fields[6])
+		}
+		if len(fields) > 7 {
+			if parsed, err := strconv.ParseUint(strings.TrimSpace(fields[7]), 10, 32); err == nil {
+				channel = uint32(parsed)
+			}
+		}
+	case "WCDMA":
+		if len(fields) > 5 {
+			band = strings.TrimSpace(fields[5])
+		}
+		if len(fields) > 7 {
+			if parsed, err := strconv.ParseUint(strings.TrimSpace(fields[7]), 10, 32); err == nil {
+				channel = uint32(parsed)
+			}
+		}
+	case "GSM":
+		if len(fields) > 6 {
+			band = strings.TrimSpace(fields[6])
+		}
+		if len(fields) > 5 {
+			if parsed, err := strconv.ParseUint(strings.TrimSpace(fields[5]), 10, 32); err == nil {
+				channel = uint32(parsed)
+			}
+		}
+	}
+	return mode, "", band, channel
+}
+
+func parseIntDefault(in string, fallback int) int {
+	v, err := strconv.Atoi(strings.TrimSpace(in))
+	if err != nil {
+		return fallback
+	}
+	return v
+}
+
+func normalizeTenthsSignal(v, min, max int) int {
+	if v >= min && v <= max {
+		return v
+	}
+	scaled := v / 10
+	if scaled >= min && scaled <= max {
+		return scaled
+	}
+	return v
 }
 
 func parseAPN(resp string) string {
@@ -514,6 +629,32 @@ func parseUSBNet(resp string) (int, bool) {
 		return mode, true
 	}
 	return -1, false
+}
+
+func parseQPCMVAudioMode(resp string) (bool, int, bool) {
+	line, ok := findLineWithPrefix(resp, "+QPCMV:")
+	if !ok {
+		return false, 0, false
+	}
+	parts := strings.Split(strings.TrimSpace(strings.TrimPrefix(line, "+QPCMV:")), ",")
+	enabled := strings.TrimSpace(parts[0]) == "1"
+	mode := 0
+	if len(parts) > 1 {
+		fmt.Sscanf(strings.TrimSpace(parts[1]), "%d", &mode)
+	}
+	return enabled, mode, true
+}
+
+func parseCPCMREGAudioMode(resp string) (bool, int, bool) {
+	line, ok := findLineWithPrefix(resp, "+CPCMREG:")
+	if !ok {
+		return false, 0, false
+	}
+	v := 0
+	if _, err := fmt.Sscanf(strings.TrimSpace(strings.TrimPrefix(line, "+CPCMREG:")), "%d", &v); err != nil {
+		return false, 0, false
+	}
+	return v == 1, v, true
 }
 
 // parseCCHO 解析 AT+CCHO 响应，提取逻辑通道号

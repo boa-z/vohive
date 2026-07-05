@@ -56,6 +56,7 @@ type Manager struct {
 	atPort   string
 	port     serial.Port
 	portMode *serial.Mode
+	dialect  atDialect
 
 	// 通道驱动的异步架构
 	stop        chan struct{}
@@ -165,6 +166,7 @@ func New(cfg config.DeviceConfig) (*Manager, error) {
 	m := &Manager{
 		cfg:          cfg,
 		atPort:       cfg.ATPort,
+		dialect:      resolveATDialect(cfg.ModuleVendor),
 		stop:         make(chan struct{}),
 		cmdChan:      make(chan commandRequest, 10),
 		cmdChanHigh:  make(chan commandRequest, 5),
@@ -873,15 +875,7 @@ func (m *Manager) initModem() {
 	}
 
 	// 2. 初始化命令序列
-	initCmds := []string{
-		"ATE0",              // 关闭回显
-		"AT+CMGF=0",         // PDU 模式
-		"AT+CNMI=2,1,0,0,0", // 新短信上报 +CMTI
-		"AT+CLIP=1",         // 启用来电号码显示 (+CLIP URC)
-		"AT+QPCMV=1,2",      // 开启 UAC 语音模式 (PCM → ALSA 桥接必须)
-	}
-
-	for _, cmd := range initCmds {
+	for _, cmd := range m.dialect.InitCommands {
 		// 这些初始化命令使用 ExecuteATSilent 降低日志噪音，避免用户误解全在走 AT
 		m.ExecuteATSilent(cmd, 2*time.Second)
 		time.Sleep(100 * time.Millisecond)
@@ -1259,7 +1253,7 @@ func (m *Manager) isURC(line string) bool {
 		return false
 	}
 	// 排除确认为同步命令的异步回显，避免被 URC 处理函数拦截并报“未分类”
-	if strings.HasPrefix(s, "+CSIM:") || strings.HasPrefix(s, "+CGLA:") || strings.HasPrefix(s, "+CCHO:") || strings.HasPrefix(s, "+CMGR:") || strings.HasPrefix(s, "+CMGS:") || strings.HasPrefix(s, "+QENG:") {
+	if strings.HasPrefix(s, "+CSIM:") || strings.HasPrefix(s, "+CGLA:") || strings.HasPrefix(s, "+CCHO:") || strings.HasPrefix(s, "+CMGR:") || strings.HasPrefix(s, "+CMGS:") || strings.HasPrefix(s, "+QENG:") || strings.HasPrefix(s, "+ICCID:") || strings.HasPrefix(s, "+CPSI:") || strings.HasPrefix(s, "+CPCMREG:") {
 		return false
 	}
 	if strings.HasPrefix(s, "+") || strings.HasPrefix(s, "^") || strings.HasPrefix(s, "$") {
@@ -2190,6 +2184,9 @@ func (m *Manager) CancelUSSD() {
 // 许多 Quectel 模块需要 AT+QCFG="USBCFG" 最后一位为 1 才能在系统枚举出声卡
 // 返回 modified(bool) 表示是否发生了配置更改，如果发生了更改，必须重启才能生效
 func (m *Manager) CheckAndEnableUAC() (bool, error) {
+	if !m.dialect.isQuectel() {
+		return false, nil
+	}
 	resp, err := m.ExecuteAT(`AT+QCFG="USBCFG"?`, 3*time.Second)
 	if err != nil {
 		return false, err
@@ -2233,7 +2230,7 @@ func (m *Manager) CheckAndEnableUAC() (bool, error) {
 	return false, nil
 }
 
-// EnableUSBAudio 开启 USB Audio UAC模式 (AT+QPCMV=1,2)
+// EnableUSBAudio 开启 USB Audio UAC 模式。
 // 注意：每次模块重启此设置都会失效，需要在开机后初始化流程或业务需要前调用
 func (m *Manager) EnableUSBAudio() error {
 	// 查询当前 QPCMV 状态避免重复发送
@@ -2243,18 +2240,24 @@ func (m *Manager) EnableUSBAudio() error {
 		return nil
 	}
 
-	_, err = m.ExecuteAT("AT+QPCMV=1,2", 2*time.Second)
+	if strings.TrimSpace(m.dialect.USBAudioEnableCommand) == "" {
+		return fmt.Errorf("%s 模组不支持 USB Audio 开启命令", m.dialect.Vendor)
+	}
+	_, err = m.ExecuteAT(m.dialect.USBAudioEnableCommand, 2*time.Second)
 	if err != nil {
-		logger.Error(fmt.Sprintf("[%s] 开启 USB Audio (QPCMV) 失败", m.cfg.ID), "err", err)
+		logger.Error(fmt.Sprintf("[%s] 开启 USB Audio 失败", m.cfg.ID), "err", err)
 		return err
 	}
-	logger.Info(fmt.Sprintf("[%s] USB Audio (QPCMV) 已配置开启", m.cfg.ID))
+	logger.Info(fmt.Sprintf("[%s] USB Audio 已配置开启", m.cfg.ID))
 	return nil
 }
 
-// DisableUSBAudio 关闭 USB Audio 模式 (AT+QPCMV=0)
+// DisableUSBAudio 关闭 USB Audio 模式。
 func (m *Manager) DisableUSBAudio() error {
-	_, err := m.ExecuteAT("AT+QPCMV=0", 2*time.Second)
+	if strings.TrimSpace(m.dialect.USBAudioDisableCommand) == "" {
+		return fmt.Errorf("%s 模组不支持 USB Audio 关闭命令", m.dialect.Vendor)
+	}
+	_, err := m.ExecuteAT(m.dialect.USBAudioDisableCommand, 2*time.Second)
 	if err != nil {
 		logger.Error(fmt.Sprintf("[%s] 关闭 USB Audio 失败", m.cfg.ID), "err", err)
 		return err
@@ -2265,19 +2268,16 @@ func (m *Manager) DisableUSBAudio() error {
 
 // QueryUSBAudioMode 查询当前 USB Audio 状态
 func (m *Manager) QueryUSBAudioMode() (bool, int, error) {
-	resp, err := m.ExecuteAT("AT+QPCMV?", 2*time.Second)
+	if strings.TrimSpace(m.dialect.USBAudioQueryCommand) == "" || m.dialect.ParseUSBAudioMode == nil {
+		return false, 0, fmt.Errorf("%s 模组不支持 USB Audio 状态查询", m.dialect.Vendor)
+	}
+	resp, err := m.ExecuteAT(m.dialect.USBAudioQueryCommand, 2*time.Second)
 	if err != nil {
 		return false, 0, err
 	}
-	idx := strings.Index(resp, "+QPCMV:")
-	if idx == -1 {
-		return false, 0, errors.New("查询失败: 响应未包含 +QPCMV")
-	}
-	parts := strings.Split(strings.TrimSpace(resp[idx+7:]), ",")
-	enabled := strings.TrimSpace(parts[0]) == "1"
-	mode := 0
-	if len(parts) > 1 {
-		fmt.Sscanf(strings.TrimSpace(parts[1]), "%d", &mode)
+	enabled, mode, ok := m.dialect.ParseUSBAudioMode(resp)
+	if !ok {
+		return false, 0, errors.New("查询失败: 响应未包含 USB Audio 状态")
 	}
 	return enabled, mode, nil
 }
