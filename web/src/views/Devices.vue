@@ -1116,6 +1116,17 @@ usePollingScheduler(refreshListOnly, 15000, {
 })
 
 type OverviewSSEPayload = { devices?: DeviceOverviewItem[] }
+type UssdSSEPayload = {
+  nonce: number
+  device_id?: string
+  session_id?: string
+  text?: string
+  raw_text?: string
+  status?: number
+  dcs?: number
+  done?: boolean
+  channel?: string
+}
 
 function handleOverviewEvent(data: OverviewSSEPayload) {
   if (!data?.devices || !data.devices.length) return
@@ -1136,6 +1147,8 @@ function handleOverviewEvent(data: OverviewSSEPayload) {
 }
 
 let overviewStream: ReturnType<typeof useEventStream<OverviewSSEPayload>> | null = null
+let ussdEventSeq = 0
+const latestUssdEvent = ref<UssdSSEPayload | null>(null)
 
 function setupSSE() {
   if (overviewStream) {
@@ -1145,6 +1158,7 @@ function setupSSE() {
   realtimeTrafficActiveUntil.value = 0
   trafficSpeedRx.value = ''
   trafficSpeedTx.value = ''
+  latestUssdEvent.value = null
   resetRollingTrafficWindow()
 
   const id = selectedId.value
@@ -1159,11 +1173,22 @@ function setupSSE() {
     parse: (payload: string) => JSON.parse(payload) as OverviewSSEPayload,
     onEvent: handleOverviewEvent,
     onRawEvent: (eventName: string, payload: string) => {
-      if (eventName !== 'traffic') return
-      try {
-        handleRealtimeTrafficEvent(JSON.parse(payload) as RealtimeTrafficSnapshot)
-      } catch {
-        // Ignore a malformed realtime frame without tearing down the overview stream.
+      if (eventName === 'traffic') {
+        try {
+          handleRealtimeTrafficEvent(JSON.parse(payload) as RealtimeTrafficSnapshot)
+        } catch {
+          // Ignore a malformed realtime frame without tearing down the overview stream.
+        }
+        return
+      }
+      if (eventName === 'ussd') {
+        try {
+          const event = JSON.parse(payload) as Omit<UssdSSEPayload, 'nonce'>
+          if (event.device_id && event.device_id !== selectedId.value) return
+          latestUssdEvent.value = { ...event, nonce: ++ussdEventSeq }
+        } catch {
+          // Ignore a malformed realtime frame without tearing down the overview stream.
+        }
       }
     }
   })
@@ -1298,7 +1323,7 @@ usePollingScheduler(async () => {
               />
             </el-tab-pane>
             <el-tab-pane label="USSD 终端" name="ussd" lazy>
-              <DeviceUssdTab :device-id="selectedDevice.id" />
+              <DeviceUssdTab :device-id="selectedDevice.id" :ussd-event="latestUssdEvent" />
             </el-tab-pane>
             <el-tab-pane label="卡策略" name="card" lazy>
               <CardPolicyPanel

@@ -2545,6 +2545,8 @@ func (s *Server) handleDeviceMgmtOverviewStreamSingle(c *gin.Context) {
 	// 若 VoWiFi 未启动则 stateCh 为 nil，nil channel 在 select 中永远阻塞，行为安全。
 	stateCh, unsubState := s.pool.SubscribeVoWiFiState(deviceID)
 	defer unsubState()
+	ussdCh, unsubUSSD := s.pool.SubscribeVoWiFiUSSD(deviceID)
+	defer unsubUSSD()
 	trafficStream := overviewTrafficStreamState{
 		subscriber: s.trafficRT,
 		deviceID:   deviceID,
@@ -2650,6 +2652,9 @@ func (s *Server) handleDeviceMgmtOverviewStreamSingle(c *gin.Context) {
 			sendData(true, false)
 		case <-stateCh: // VoWiFi 状态变化（隧道建立/IMS 注册/SMS 就绪等），立即推送
 			sendData(false, true)
+		case ev := <-ussdCh:
+			c.SSEvent("ussd", ev)
+			c.Writer.Flush()
 		case snap, ok := <-trafficCh:
 			if !ok {
 				trafficStream.stop()

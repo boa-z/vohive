@@ -197,6 +197,33 @@ func TestVoWiFiRuntimeDispatcherPersistsSMSSentWithoutNotifier(t *testing.T) {
 	}
 }
 
+func TestVoWiFiRuntimeDispatcherBroadcastsUSSDUpdated(t *testing.T) {
+	p := NewPool(nil)
+	ch, unsub := p.SubscribeVoWiFiUSSD("dev-ussd")
+	defer unsub()
+
+	at := time.Date(2026, 7, 5, 12, 0, 0, 0, time.UTC)
+	poolVoWiFiRuntimeDispatcher{pool: p}.Dispatch(context.Background(), eventhost.USSDUpdated{
+		DevID:     "dev-ussd",
+		SessionID: "ussd-1",
+		Text:      "1. Balance",
+		RawText:   "menu",
+		Status:    200,
+		DCS:       15,
+		Done:      false,
+		Time:      at,
+	})
+
+	select {
+	case got := <-ch:
+		if got.DeviceID != "dev-ussd" || got.SessionID != "ussd-1" || got.Text != "1. Balance" || got.RawText != "menu" || got.Status != 200 || got.DCS != 15 || got.Done || got.Channel != "vowifi" || !got.Time.Equal(at) {
+			t.Fatalf("event=%+v", got)
+		}
+	case <-time.After(time.Second):
+		t.Fatal("timeout waiting for USSD event")
+	}
+}
+
 func TestVoWiFiSMSHistoryRecorderSkipsDuplicateReceivedSMS(t *testing.T) {
 	initDevicePhoneNumberTestDB(t)
 	if err := db.UpdateSIMCardVoWiFiPhoneNumberByIMSI("imsi-vowifi-dup", "+8613900000000"); err != nil {

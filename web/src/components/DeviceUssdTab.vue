@@ -1,11 +1,34 @@
 <script setup lang="ts">
-import { ref, computed } from 'vue'
+import { ref, computed, watch } from 'vue'
 import { Phone24Regular } from '@vicons/fluent'
 import { devicesService } from '../services/devices'
+
+type UssdRealtimeEvent = {
+  nonce?: number
+  device_id?: string
+  session_id?: string
+  text?: string
+  raw_text?: string
+  status?: number
+  dcs?: number
+  done?: boolean
+  channel?: string
+}
+
+type UssdDisplayResult = {
+  status?: number
+  text?: string
+  rawText?: string
+  dcs?: number
+  sessionId?: string
+  channel?: string
+  done?: boolean
+}
 
 const props = defineProps<{
   deviceId: string
   vowifiActive?: boolean
+  ussdEvent?: UssdRealtimeEvent | null
 }>()
 
 const ussdCmd = ref('')
@@ -14,9 +37,103 @@ const sending = ref(false)
 const sessionId = ref('')
 const sessionChannel = ref('')
 const history = ref<Array<{ ts: number; type: 'req' | 'res' | 'err' | 'sys'; content: string; dcs?: number; channel?: string }>>([])
+const responseSeen = new Map<string, number>()
 
 const isMultiRound = computed(() => !!sessionId.value)
 const inputPlaceholder = computed(() => isMultiRound.value ? '输入菜单选项数字' : '例如 *100# 或菜单回复数字')
+
+function responseContent(d: UssdDisplayResult) {
+  return d.text || d.rawText || '[空响应]'
+}
+
+function responseKey(d: UssdDisplayResult) {
+  return [
+    d.sessionId || '',
+    d.channel || '',
+    d.status ?? '',
+    d.dcs ?? '',
+    d.done === undefined ? '' : String(d.done),
+    responseContent(d)
+  ].join('\u0000')
+}
+
+function isDuplicateResponse(d: UssdDisplayResult) {
+  const now = Date.now()
+  for (const [key, ts] of responseSeen) {
+    if (now - ts > 5000) responseSeen.delete(key)
+  }
+  const key = responseKey(d)
+  const seenAt = responseSeen.get(key)
+  if (seenAt && now - seenAt <= 5000) return true
+  responseSeen.set(key, now)
+  return false
+}
+
+function wantsMoreInput(d: UssdDisplayResult) {
+  if (!d.sessionId) return false
+  if (d.status === 1) return true
+  if (d.status === 2 || d.status === 5) return false
+  return d.done === false
+}
+
+function updateSession(d: UssdDisplayResult) {
+  if (d.channel) sessionChannel.value = d.channel
+  if (wantsMoreInput(d)) {
+    sessionId.value = d.sessionId || ''
+    return
+  }
+  endSession()
+}
+
+function appendUSSDResponse(d: UssdDisplayResult) {
+  const duplicate = isDuplicateResponse(d)
+  updateSession(d)
+  if (duplicate) return
+
+  if (d.status === 5) {
+    history.value.push({
+      ts: Date.now(),
+      type: 'err',
+      content: `[网络不支持/无响应]\n` + responseContent(d),
+      dcs: d.dcs,
+      channel: d.channel
+    })
+    return
+  }
+  if (d.status === 2) {
+    history.value.push({
+      ts: Date.now(),
+      type: 'err',
+      content: `[被网络终止]\n` + responseContent(d),
+      dcs: d.dcs,
+      channel: d.channel
+    })
+    return
+  }
+  history.value.push({
+    ts: Date.now(),
+    type: 'res',
+    content: responseContent(d),
+    dcs: d.dcs,
+    channel: d.channel
+  })
+}
+
+watch(() => props.ussdEvent, (ev) => {
+  if (!ev) return
+  const eventDeviceID = String(ev.device_id || '').trim()
+  if (eventDeviceID && eventDeviceID !== props.deviceId) return
+  if (!ev.session_id && !ev.text && !ev.raw_text) return
+  appendUSSDResponse({
+    status: ev.status,
+    text: ev.text || '',
+    rawText: ev.raw_text || '',
+    dcs: ev.dcs,
+    sessionId: ev.session_id || '',
+    channel: ev.channel || 'vowifi',
+    done: ev.done
+  })
+})
 
 async function sendUSSD() {
   const cmd = String(ussdCmd.value || '').trim()
@@ -27,7 +144,7 @@ async function sendUSSD() {
   ussdCmd.value = ''
 
   try {
-    let d: { status?: number; text?: string; rawText?: string; dcs?: number; sessionId?: string; channel?: string }
+    let d: UssdDisplayResult
 
     if (isMultiRound.value) {
       // 多轮模式：通过 continue 接口发送后续输入
@@ -48,42 +165,7 @@ async function sendUSSD() {
       d = result.data
     }
 
-    // 更新通道和会话信息
-    if (d.channel) sessionChannel.value = d.channel
-
-    if (d.status === 5) {
-      history.value.push({
-        ts: Date.now(),
-        type: 'err',
-        content: `[网络不支持/无响应]\n` + (d.text || d.rawText || '[空响应]'),
-        dcs: d.dcs,
-        channel: d.channel
-      })
-      endSession()
-    } else if (d.status === 2) {
-      history.value.push({
-        ts: Date.now(),
-        type: 'err',
-        content: `[被网络终止]\n` + (d.text || d.rawText || '[空响应]'),
-        dcs: d.dcs,
-        channel: d.channel
-      })
-      endSession()
-    } else {
-      history.value.push({
-        ts: Date.now(),
-        type: 'res',
-        content: d.text || d.rawText || '[空响应]',
-        dcs: d.dcs,
-        channel: d.channel
-      })
-      // status=1 表示网络期望后续输入（多轮）
-      if (d.status === 1 && d.sessionId) {
-        sessionId.value = d.sessionId
-      } else {
-        endSession()
-      }
-    }
+    appendUSSDResponse(d)
   } catch (e: unknown) {
     history.value.push({
       ts: Date.now(),
@@ -118,6 +200,7 @@ function endSession() {
 
 function clearHistory() {
   history.value = []
+  responseSeen.clear()
   endSession()
 }
 </script>

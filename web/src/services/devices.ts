@@ -45,6 +45,7 @@ type UssdResult = {
   raw_xml?: string
   dcs?: number
   session_id?: string
+  done?: boolean
 }
 
 type UssdResponse = {
@@ -278,6 +279,7 @@ export const devicesService = {
         rawText: result.raw_text || result.raw_xml || '',
         dcs: result.dcs,
         sessionId: result.session_id || '',
+        done: result.done,
         channel: res.data?.channel || ''
       }
     })
@@ -294,6 +296,7 @@ export const devicesService = {
         rawText: result.raw_text || result.raw_xml || '',
         dcs: result.dcs,
         sessionId: result.session_id || '',
+        done: result.done,
         channel: res.data?.channel || ''
       }
     })

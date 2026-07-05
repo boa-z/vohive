@@ -202,6 +202,10 @@ type Pool struct {
 	// 概览监控页面流定阅数统计
 	overviewSubs atomic.Int32
 
+	vowifiUSSDMu   sync.RWMutex
+	vowifiUSSDSeq  uint64
+	vowifiUSSDSubs map[string]map[uint64]chan VoWiFiUSSDEvent
+
 	// 热插拔监听
 	udevWatcher    *UdevWatcher
 	startOnce      sync.Once
@@ -226,6 +230,7 @@ func NewPool(cfg *config.Config) *Pool {
 		switchingDevices:      make(map[string]bool),
 		switchContexts:        make(map[string]esimSwitchContext),
 		switchTokens:          make(map[string]uint64),
+		vowifiUSSDSubs:        make(map[string]map[uint64]chan VoWiFiUSSDEvent),
 		lifecycle:             newLifecycleCoordinator(),
 	}
 	p.transportRecovery = NewTransportRecoveryController(p)
