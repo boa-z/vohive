@@ -282,6 +282,7 @@ func main() {
 					voiceGW.HandleClientCancel(deviceID, req, tx)
 				})
 				sipRegistrar.SetOnPrack(voiceGW.HandleClientPrack)
+				sipRegistrar.SetOnInfo(voiceGW.HandleClientInfo)
 				sipRegistrar.SetOnAck(voiceGW.HandleClientAck)
 				sipRegistrar.SetOnBye(func(deviceID string, req *sip.Request, tx sip.ServerTransaction) {
 					callID := req.CallID().Value()

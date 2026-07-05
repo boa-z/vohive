@@ -74,6 +74,8 @@ type Registrar struct {
 	onCancel func(deviceID string, req *sip.Request, tx sip.ServerTransaction)
 	// PRACK 回调
 	onPrack func(deviceID string, req *sip.Request, tx sip.ServerTransaction)
+	// INFO 回调
+	onInfo func(deviceID string, req *sip.Request, tx sip.ServerTransaction)
 	// ACK 回调
 	onAck func(deviceID string, req *sip.Request, tx sip.ServerTransaction)
 	// BYE 回调：Linphone 挂断时调用
@@ -167,6 +169,8 @@ func (r *Registrar) Start(ctx context.Context) error {
 
 	// 处理 PRACK (用于 100rel)
 	srv.OnRequest("PRACK", r.handlePrack)
+	// 处理 INFO (DTMF/补充业务等对话内信令)
+	srv.OnRequest("INFO", r.handleInfo)
 
 	// 创建 SIP Client (用于发送 INVITE)
 	// 注意: 必须在 Server 注册处理器之后创建，否则 Client 会拦截入站请求
@@ -1100,6 +1104,13 @@ func (r *Registrar) SetOnPrack(handler func(deviceID string, req *sip.Request, t
 	r.mu.Unlock()
 }
 
+// SetOnInfo 设置 INFO 回调
+func (r *Registrar) SetOnInfo(handler func(deviceID string, req *sip.Request, tx sip.ServerTransaction)) {
+	r.mu.Lock()
+	r.onInfo = handler
+	r.mu.Unlock()
+}
+
 // handlePrack 处理 PRACK 请求
 func (r *Registrar) handlePrack(req *sip.Request, tx sip.ServerTransaction) {
 	username := extractUsername(req.From())
@@ -1116,6 +1127,23 @@ func (r *Registrar) handlePrack(req *sip.Request, tx sip.ServerTransaction) {
 		// 默认回复 481 Call/Transaction Does Not Exist
 		if err := tx.Respond(sip.NewResponseFromRequest(req, 481, "Call/Transaction Does Not Exist", nil)); err != nil {
 			logger.Warn("发送 481 失败", "err", err)
+		}
+	}
+}
+
+// handleInfo 处理 INFO 请求
+func (r *Registrar) handleInfo(req *sip.Request, tx sip.ServerTransaction) {
+	username := extractUsername(req.From())
+	r.mu.RLock()
+	handler := r.onInfo
+	r.mu.RUnlock()
+
+	user := r.GetUserByUsername(username)
+	if handler != nil && user != nil {
+		go handler(user.DeviceID, req, tx)
+	} else {
+		if err := tx.Respond(sip.NewResponseFromRequest(req, 481, "Call/Transaction Does Not Exist", nil)); err != nil {
+			logger.Warn("发送 INFO 481 失败", "err", err)
 		}
 	}
 }
