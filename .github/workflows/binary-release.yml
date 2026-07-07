@@ -14,6 +14,14 @@ on:
         description: 'Enable UPX compression (true/false)'
         required: false
         default: 'true'
+      release_name:
+        description: 'Optional GitHub Release title for manual runs'
+        required: false
+        default: ''
+      release_notes:
+        description: 'Optional GitHub Release notes for manual runs'
+        required: false
+        default: ''
 
 permissions:
   contents: write
@@ -82,17 +90,20 @@ jobs:
       - name: Prepare build vars
         id: vars
         shell: bash
+        env:
+          INPUT_VERSION: ${{ github.event.inputs.version || 'dev' }}
+          INPUT_ENABLE_UPX: ${{ github.event.inputs.enable_upx || 'true' }}
         run: |
           if [[ "${GITHUB_REF_TYPE}" == "tag" ]]; then
             VERSION="${GITHUB_REF_NAME}"
           else
-            VERSION="${{ github.event.inputs.version || 'dev' }}"
+            VERSION="${INPUT_VERSION}"
           fi
           BUILDTIME="$(date -u +'%Y-%m-%dT%H:%M:%SZ')"
           REVISION="${GITHUB_SHA}"
 
           if [[ "${GITHUB_EVENT_NAME}" == "workflow_dispatch" ]]; then
-            ENABLE_UPX_RAW="${{ github.event.inputs.enable_upx }}"
+            ENABLE_UPX_RAW="${INPUT_ENABLE_UPX}"
           else
             ENABLE_UPX_RAW="true"
           fi
@@ -168,13 +179,30 @@ jobs:
       - name: Prepare release vars
         id: release_vars
         shell: bash
+        env:
+          INPUT_VERSION: ${{ github.event.inputs.version || 'dev' }}
+          INPUT_RELEASE_NAME: ${{ github.event.inputs.release_name || '' }}
+          INPUT_RELEASE_NOTES: ${{ github.event.inputs.release_notes || '' }}
         run: |
           if [[ "${GITHUB_REF_TYPE}" == "tag" ]]; then
             RELEASE_VERSION="${GITHUB_REF_NAME}"
+            RELEASE_NAME="${GITHUB_REF_NAME}"
+            RELEASE_BODY=""
           else
-            RELEASE_VERSION="${{ github.event.inputs.version || 'dev' }}"
+            RELEASE_VERSION="${INPUT_VERSION}"
+            RELEASE_NAME="${INPUT_RELEASE_NAME}"
+            RELEASE_BODY="${INPUT_RELEASE_NOTES}"
+          fi
+          if [[ -z "${RELEASE_NAME}" ]]; then
+            RELEASE_NAME="${RELEASE_VERSION}"
           fi
           echo "release_version=${RELEASE_VERSION}" >> "${GITHUB_OUTPUT}"
+          echo "release_name=${RELEASE_NAME}" >> "${GITHUB_OUTPUT}"
+          {
+            echo "release_body<<EOF"
+            printf '%s\n' "${RELEASE_BODY}"
+            echo "EOF"
+          } >> "${GITHUB_OUTPUT}"
 
       - name: Download all artifacts
         uses: actions/download-artifact@v4
@@ -187,12 +215,14 @@ jobs:
         uses: softprops/action-gh-release@v2
         with:
           tag_name: ${{ steps.release_vars.outputs.release_version }}
+          name: ${{ steps.release_vars.outputs.release_name }}
+          body: ${{ steps.release_vars.outputs.release_body }}
           files: dist/*
           fail_on_unmatched_files: true
           overwrite_files: true
 
-      - name: Load source release metadata
-        id: source_release
+      - name: Load current release metadata
+        id: current_release
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         shell: bash
@@ -221,7 +251,7 @@ jobs:
         if: ${{ env.TELEGRAM_BOT_TOKEN != '' && env.TELEGRAM_CHANNEL_ID != '' }}
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-          RELEASE_BODY: ${{ steps.source_release.outputs.release_body }}
+          RELEASE_BODY: ${{ steps.current_release.outputs.release_body }}
         shell: bash
         run: |
           set -euo pipefail

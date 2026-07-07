@@ -77,6 +77,28 @@ dependency_hygiene() {
 	printf '\n==> dependency hygiene ok\n'
 }
 
+release_hygiene() {
+	local workflow
+	workflow=".github/workflows/binary-release.yml"
+	if [[ ! -f "$workflow" ]]; then
+		printf 'release workflow not found: %s\n' "$workflow" >&2
+		return 1
+	fi
+	if git grep -nE 'repository:[[:space:]]*[^[:space:]]+|GH[_]PAT|vohive[-]release|github[.]com/iniwex5' -- "$workflow"; then
+		printf 'release workflow must publish only to the current repository without cross-repo PAT wiring\n' >&2
+		return 1
+	fi
+	if ! git grep -n 'softprops/action-gh-release' -- "$workflow" >/dev/null; then
+		printf 'release workflow does not publish through softprops/action-gh-release\n' >&2
+		return 1
+	fi
+	if ! git grep -n 'files: dist/*' -- "$workflow" >/dev/null; then
+		printf 'release workflow must upload dist artifacts to the current release\n' >&2
+		return 1
+	fi
+	printf '\n==> release hygiene ok\n'
+}
+
 web_build() {
 	run npm ci --prefix web
 	run npm run build --prefix web
@@ -108,9 +130,9 @@ go_build() {
 
 usage() {
 	cat <<'USAGE'
-Usage: scripts/ci.sh [all|workflow-lint|hygiene|web|tidy|test|build ...]
+Usage: scripts/ci.sh [all|workflow-lint|hygiene|release-hygiene|web|tidy|test|build ...]
 
-Default all runs workflow-lint, hygiene, web, tidy, test, and build.
+Default all runs workflow-lint, hygiene, release-hygiene, web, tidy, test, and build.
 
 Environment:
   GO_BIN               path to go binary
@@ -126,7 +148,7 @@ USAGE
 GO_BIN="$(find_go)"
 
 if [[ $# -eq 0 || "${1:-}" == "all" ]]; then
-	tasks=(workflow-lint hygiene web tidy test build)
+	tasks=(workflow-lint hygiene release-hygiene web tidy test build)
 else
 	tasks=("$@")
 fi
@@ -138,6 +160,7 @@ for task in "${tasks[@]}"; do
 	case "$task" in
 		workflow-lint | actionlint) workflow_lint ;;
 		hygiene | dependency-hygiene) dependency_hygiene ;;
+		release-hygiene | release) release_hygiene ;;
 		web | frontend) web_build ;;
 		tidy | tidy-check) tidy_check ;;
 		test | go-test) go_tests ;;
