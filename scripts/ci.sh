@@ -96,7 +96,51 @@ release_hygiene() {
 		printf 'release workflow must upload dist artifacts to the current release\n' >&2
 		return 1
 	fi
+	if ! git grep -nF 'repos/${GITHUB_REPOSITORY}/releases/tags/' -- "$workflow" >/dev/null; then
+		printf 'release workflow must read metadata from the current GitHub repository\n' >&2
+		return 1
+	fi
 	printf '\n==> release hygiene ok\n'
+}
+
+container_hygiene() {
+	local publish build compose
+	publish=".github/workflows/docker-publish.yml"
+	build=".github/workflows/docker-build.yml"
+	compose="docker-compose.hub.yml"
+
+	for file in "$publish" "$build" "$compose"; do
+		if [[ ! -f "$file" ]]; then
+			printf 'container build file not found: %s\n' "$file" >&2
+			return 1
+		fi
+	done
+
+	if git grep -nE 'DOCKERHUB|dockerhub|secrets[.]DOCKERHUB|iniwex[/]vohive' -- "$publish" "$build" "$compose" DOCKERHUB.md; then
+		printf 'container build configuration must not reference DockerHub or legacy images\n' >&2
+		return 1
+	fi
+	if git grep -nF 'ghcr.io/${{ github.repository }}/vohive' -- "$publish" "$build"; then
+		printf 'container build configuration must not duplicate the vohive image path\n' >&2
+		return 1
+	fi
+	if ! git grep -nF 'CONTAINER_IMAGE: ghcr.io/${{ github.repository }}' -- "$publish" >/dev/null; then
+		printf 'docker publish workflow must publish to ghcr.io/${{ github.repository }}\n' >&2
+		return 1
+	fi
+	if ! git grep -nF 'tags: ghcr.io/${{ github.repository }}:dev' -- "$build" >/dev/null; then
+		printf 'manual docker build workflow must tag the current GHCR repository\n' >&2
+		return 1
+	fi
+	if [[ "$(git grep -nF 'registry: ghcr.io' -- "$publish" "$build" | wc -l | tr -d ' ')" -lt 2 ]]; then
+		printf 'docker workflows must authenticate against ghcr.io when pushing\n' >&2
+		return 1
+	fi
+	if ! git grep -nF 'image: ${VOHIVE_IMAGE:-ghcr.io/boa-z/vohive:latest}' -- "$compose" >/dev/null; then
+		printf 'prebuilt compose file must default to the current GHCR image\n' >&2
+		return 1
+	fi
+	printf '\n==> container hygiene ok\n'
 }
 
 web_build() {
@@ -130,9 +174,9 @@ go_build() {
 
 usage() {
 	cat <<'USAGE'
-Usage: scripts/ci.sh [all|workflow-lint|hygiene|release-hygiene|web|tidy|test|build ...]
+Usage: scripts/ci.sh [all|workflow-lint|hygiene|release-hygiene|container-hygiene|web|tidy|test|build ...]
 
-Default all runs workflow-lint, hygiene, release-hygiene, web, tidy, test, and build.
+Default all runs workflow-lint, hygiene, release-hygiene, container-hygiene, web, tidy, test, and build.
 
 Environment:
   GO_BIN               path to go binary
@@ -148,7 +192,7 @@ USAGE
 GO_BIN="$(find_go)"
 
 if [[ $# -eq 0 || "${1:-}" == "all" ]]; then
-	tasks=(workflow-lint hygiene release-hygiene web tidy test build)
+	tasks=(workflow-lint hygiene release-hygiene container-hygiene web tidy test build)
 else
 	tasks=("$@")
 fi
@@ -161,6 +205,7 @@ for task in "${tasks[@]}"; do
 		workflow-lint | actionlint) workflow_lint ;;
 		hygiene | dependency-hygiene) dependency_hygiene ;;
 		release-hygiene | release) release_hygiene ;;
+		container-hygiene | container | docker-hygiene) container_hygiene ;;
 		web | frontend) web_build ;;
 		tidy | tidy-check) tidy_check ;;
 		test | go-test) go_tests ;;
