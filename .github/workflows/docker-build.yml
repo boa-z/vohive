@@ -17,7 +17,28 @@ on:
         default: "true"
 
 jobs:
+  validate:
+    name: Validate manual container gates
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+    permissions:
+      contents: read
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-go@v5
+        with:
+          go-version-file: go.mod
+          cache: true
+          cache-dependency-path: |
+            go.mod
+            go.sum
+
+      - name: Run manual container gates
+        run: ./scripts/ci.sh workflow-lint hygiene release-hygiene container-hygiene tidy test
+
   build:
+    needs: validate
     runs-on: ubuntu-latest
     permissions:
       contents: read
