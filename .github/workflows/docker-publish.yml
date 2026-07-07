@@ -81,11 +81,8 @@ jobs:
           labels: ${{ steps.meta.outputs.labels }}
           cache-from: type=gha
           cache-to: type=gha,mode=max
-          secrets: |
-            gh_pat=${{ secrets.GH_PAT }}
           build-args: |
             VERSION=${{ steps.vars.outputs.version }}
             BUILDTIME=${{ steps.vars.outputs.buildtime }}
             REVISION=${{ steps.vars.outputs.revision }}
             ENABLE_UPX=${{ steps.vars.outputs.enable_upx }}
-            GH_PAT=${{ secrets.GH_PAT }}

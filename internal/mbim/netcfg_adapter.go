@@ -3,7 +3,7 @@ package mbimcore
 import (
 	"net"
 
-	"github.com/iniwex5/quectel-qmi-go/pkg/netcfg"
+	"github.com/boa-z/quectel-qmi-go/pkg/netcfg"
 )
 
 type netConfigurator interface {

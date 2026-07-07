@@ -6,8 +6,8 @@ import (
 	"strings"
 	"time"
 
+	"github.com/boa-z/vohive/internal/websheet"
 	"github.com/gin-gonic/gin"
-	"github.com/iniwex5/vohive/internal/websheet"
 )
 
 func (s *Server) registerWebsheetRoutes(api *gin.RouterGroup) {

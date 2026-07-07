@@ -5,9 +5,9 @@ import (
 	"strings"
 	"time"
 
+	"github.com/boa-z/vohive/internal/db"
+	"github.com/boa-z/vohive/internal/upstreamproxy"
 	"github.com/gin-gonic/gin"
-	"github.com/iniwex5/vohive/internal/db"
-	"github.com/iniwex5/vohive/internal/upstreamproxy"
 )
 
 // ── 前置代理管理 API（主服务） ──

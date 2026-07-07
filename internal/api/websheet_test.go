@@ -9,9 +9,9 @@ import (
 	"testing"
 	"time"
 
+	"github.com/boa-z/vohive/internal/config"
+	"github.com/boa-z/vohive/internal/websheet"
 	"github.com/gin-gonic/gin"
-	"github.com/iniwex5/vohive/internal/config"
-	"github.com/iniwex5/vohive/internal/websheet"
 )
 
 func TestRespondWebsheetErrorMapsStatuses(t *testing.T) {

@@ -3,7 +3,7 @@ package device
 import (
 	"strings"
 
-	"github.com/iniwex5/vohive/internal/config"
+	"github.com/boa-z/vohive/internal/config"
 )
 
 func (p *Pool) ResolveQMIRecoveryAttachment(cfg config.DeviceConfig) qmiRecoveryScanDecision {

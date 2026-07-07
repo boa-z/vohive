@@ -6,11 +6,11 @@ import (
 	"strings"
 	"time"
 
-	"github.com/iniwex5/quectel-qmi-go/pkg/qmi"
-	"github.com/iniwex5/vohive/internal/db"
-	"github.com/iniwex5/vohive/internal/device"
-	"github.com/iniwex5/vohive/internal/proxy/server"
-	"github.com/iniwex5/vohive/pkg/logger"
+	"github.com/boa-z/quectel-qmi-go/pkg/qmi"
+	"github.com/boa-z/vohive/internal/db"
+	"github.com/boa-z/vohive/internal/device"
+	"github.com/boa-z/vohive/internal/proxy/server"
+	"github.com/boa-z/vohive/pkg/logger"
 )
 
 const (

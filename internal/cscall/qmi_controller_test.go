@@ -4,7 +4,7 @@ import (
 	"context"
 	"testing"
 
-	"github.com/iniwex5/quectel-qmi-go/pkg/qmi"
+	"github.com/boa-z/quectel-qmi-go/pkg/qmi"
 )
 
 type fakeQMIVoiceSource struct {

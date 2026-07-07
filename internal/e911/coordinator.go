@@ -5,11 +5,11 @@ import (
 	"errors"
 	"strings"
 
+	"github.com/boa-z/vohive/internal/device"
+	"github.com/boa-z/vohive/internal/modem"
+	"github.com/boa-z/vohive/internal/websheet"
 	"github.com/boa-z/vowifi-go/runtimehost/carrier"
 	runtimee911 "github.com/boa-z/vowifi-go/runtimehost/e911"
-	"github.com/iniwex5/vohive/internal/device"
-	"github.com/iniwex5/vohive/internal/modem"
-	"github.com/iniwex5/vohive/internal/websheet"
 )
 
 // ErrNotSupported means device status does not support e911 updates.

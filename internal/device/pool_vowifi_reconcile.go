@@ -6,8 +6,8 @@ import (
 
 	"github.com/boa-z/vowifi-go/runtimehost/carrier"
 
-	"github.com/iniwex5/vohive/internal/vowifihost"
-	"github.com/iniwex5/vohive/pkg/logger"
+	"github.com/boa-z/vohive/internal/vowifihost"
+	"github.com/boa-z/vohive/pkg/logger"
 )
 
 const (

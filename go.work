@@ -1,9 +1,0 @@
-go 1.26.3
-
-use (
-	.
-	../quectel-qmi-go
-	../vowifi-go
-)
-
-replace github.com/iniwex5/quectel-qmi-go v0.6.0 => ../quectel-qmi-go

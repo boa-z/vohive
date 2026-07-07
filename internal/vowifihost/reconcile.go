@@ -5,7 +5,7 @@ import (
 	"strings"
 	"time"
 
-	"github.com/iniwex5/vohive/pkg/logger"
+	"github.com/boa-z/vohive/pkg/logger"
 )
 
 const defaultDesiredRecoverReason = "desired_reconcile"

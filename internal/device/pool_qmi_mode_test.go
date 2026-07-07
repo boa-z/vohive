@@ -7,15 +7,15 @@ import (
 	"testing"
 	"time"
 
+	"github.com/boa-z/quectel-qmi-go/pkg/qmi"
+	"github.com/boa-z/vohive/internal/backend"
+	"github.com/boa-z/vohive/internal/config"
+	"github.com/boa-z/vohive/internal/modem"
+	qmicore "github.com/boa-z/vohive/internal/qmi"
+	"github.com/boa-z/vohive/internal/sipgw"
+	"github.com/boa-z/vohive/internal/vowifihost"
 	"github.com/boa-z/vowifi-go/runtimehost"
 	"github.com/boa-z/vowifi-go/runtimehost/identity"
-	"github.com/iniwex5/quectel-qmi-go/pkg/qmi"
-	"github.com/iniwex5/vohive/internal/backend"
-	"github.com/iniwex5/vohive/internal/config"
-	"github.com/iniwex5/vohive/internal/modem"
-	qmicore "github.com/iniwex5/vohive/internal/qmi"
-	"github.com/iniwex5/vohive/internal/sipgw"
-	"github.com/iniwex5/vohive/internal/vowifihost"
 )
 
 type workerStatusBackendStub struct {

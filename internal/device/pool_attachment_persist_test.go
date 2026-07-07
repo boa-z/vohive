@@ -5,7 +5,7 @@ import (
 	"path/filepath"
 	"testing"
 
-	"github.com/iniwex5/vohive/internal/config"
+	"github.com/boa-z/vohive/internal/config"
 )
 
 func TestDeviceIMEIBackfillNeeded(t *testing.T) {

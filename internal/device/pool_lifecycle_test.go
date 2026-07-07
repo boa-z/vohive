@@ -5,8 +5,8 @@ import (
 	"testing"
 	"time"
 
-	"github.com/iniwex5/vohive/internal/backend"
-	"github.com/iniwex5/vohive/internal/config"
+	"github.com/boa-z/vohive/internal/backend"
+	"github.com/boa-z/vohive/internal/config"
 )
 
 func TestSuppressQMIUnhealthyEvictionDuringLifecycleRecovery(t *testing.T) {

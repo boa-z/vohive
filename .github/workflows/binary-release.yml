@@ -79,15 +79,6 @@ jobs:
           go-version-file: go.mod
           cache: true
 
-      - name: Configure Git for private modules
-        env:
-          GH_PAT: ${{ secrets.GH_PAT }}
-        run: |
-          if [ -n "${GH_PAT}" ]; then
-            git config --global url."https://x-access-token:${GH_PAT}@github.com/iniwex5/".insteadOf "https://github.com/iniwex5/"
-            go env -w GOPRIVATE=github.com/iniwex5/*
-          fi
-
       - name: Prepare build vars
         id: vars
         shell: bash
@@ -134,7 +125,7 @@ jobs:
           mkdir -p dist
           CGO_ENABLED=0 GOOS=linux GOARCH=${{ matrix.goarch }} GOARM=${{ matrix.goarm }} \
             go build -trimpath -buildvcs=false -tags "with_utls" \
-            -ldflags "-s -w -X 'github.com/iniwex5/vohive/internal/global.Version=${{ steps.vars.outputs.version }}' -X 'github.com/iniwex5/vohive/internal/global.BuildTime=${{ steps.vars.outputs.buildtime }}'" \
+            -ldflags "-s -w -X 'github.com/boa-z/vohive/internal/global.Version=${{ steps.vars.outputs.version }}' -X 'github.com/boa-z/vohive/internal/global.BuildTime=${{ steps.vars.outputs.buildtime }}'" \
             -o dist/vo-hive ./cmd/vohive
 
       - name: Install UPX
@@ -196,6 +187,9 @@ jobs:
         uses: softprops/action-gh-release@v2
         with:
           tag_name: ${{ steps.release_vars.outputs.release_version }}
+          files: dist/*
+          fail_on_unmatched_files: true
+          overwrite_files: true
 
       - name: Load source release metadata
         id: source_release
@@ -222,28 +216,6 @@ jobs:
             printf '%s\n' "${release_body}"
             echo "EOF"
           } >> "${GITHUB_OUTPUT}"
-
-      - name: Validate token for cross-repo publish
-        shell: bash
-        env:
-          GH_PAT: ${{ secrets.GH_PAT }}
-        run: |
-          if [[ -z "${GH_PAT}" ]]; then
-            echo "GH_PAT is required to publish assets to iniwex5/vohive-release"
-            exit 1
-          fi
-
-      - name: Publish to vohive-release repository
-        uses: softprops/action-gh-release@v2
-        with:
-          repository: iniwex5/vohive-release
-          token: ${{ secrets.GH_PAT }}
-          tag_name: ${{ steps.release_vars.outputs.release_version }}
-          name: ${{ steps.source_release.outputs.release_name }}
-          body: ${{ steps.source_release.outputs.release_body }}
-          files: dist/*
-          fail_on_unmatched_files: true
-          overwrite_files: true
 
       - name: Upload assets to Telegram channel
         if: ${{ env.TELEGRAM_BOT_TOKEN != '' && env.TELEGRAM_CHANNEL_ID != '' }}

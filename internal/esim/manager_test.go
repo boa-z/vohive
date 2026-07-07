@@ -14,14 +14,14 @@ import (
 	"testing"
 	"time"
 
+	qmiq "github.com/boa-z/quectel-qmi-go/pkg/qmi"
+	"github.com/boa-z/vohive/internal/backend"
 	"github.com/damonto/euicc-go/bertlv"
 	"github.com/damonto/euicc-go/bertlv/primitive"
 	"github.com/damonto/euicc-go/driver"
 	euicchttp "github.com/damonto/euicc-go/http"
 	"github.com/damonto/euicc-go/lpa"
 	sgp22 "github.com/damonto/euicc-go/v2"
-	qmiq "github.com/iniwex5/quectel-qmi-go/pkg/qmi"
-	"github.com/iniwex5/vohive/internal/backend"
 	"golang.org/x/sync/singleflight"
 )
 

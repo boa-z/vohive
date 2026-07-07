@@ -4,7 +4,7 @@ import (
 	"fmt"
 	"strings"
 
-	"github.com/iniwex5/vohive/internal/config"
+	"github.com/boa-z/vohive/internal/config"
 )
 
 const DefaultFreeDeviceLimit = 5

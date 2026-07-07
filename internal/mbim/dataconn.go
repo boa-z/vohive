@@ -7,9 +7,9 @@ import (
 	"strings"
 	"time"
 
-	"github.com/iniwex5/vohive/internal/config"
-	"github.com/iniwex5/vohive/internal/netprobe"
-	"github.com/iniwex5/vohive/pkg/mbim"
+	"github.com/boa-z/vohive/internal/config"
+	"github.com/boa-z/vohive/internal/netprobe"
+	"github.com/boa-z/vohive/pkg/mbim"
 )
 
 const (

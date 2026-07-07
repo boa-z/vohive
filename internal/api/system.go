@@ -7,10 +7,10 @@ import (
 	"os/exec"
 	"time"
 
+	"github.com/boa-z/vohive/internal/config"
+	"github.com/boa-z/vohive/internal/updater"
+	"github.com/boa-z/vohive/pkg/logger"
 	"github.com/gin-gonic/gin"
-	"github.com/iniwex5/vohive/internal/config"
-	"github.com/iniwex5/vohive/internal/updater"
-	"github.com/iniwex5/vohive/pkg/logger"
 )
 
 var errNotFound = errors.New("not found")

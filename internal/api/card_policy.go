@@ -5,8 +5,8 @@ import (
 	"fmt"
 	"net/http"
 
+	"github.com/boa-z/vohive/internal/db"
 	"github.com/gin-gonic/gin"
-	"github.com/iniwex5/vohive/internal/db"
 )
 
 // patchCardPolicyForDevice 解析设备当前 ICCID，对 card_policies 行执行原地修改并落库。

@@ -20,14 +20,11 @@ ARG VERSION=unknown
 ARG BUILDTIME=unknown
 ARG REVISION=unknown
 ARG ENABLE_UPX=1
-ARG GH_PAT=""
 WORKDIR /app
 
 # 启用 Go 工具链自动下载
 ENV GOTOOLCHAIN=auto
 ENV GOWORK=off
-ENV GOPRIVATE=github.com/iniwex5/*
-ENV GONOSUMDB=github.com/iniwex5/*
 
 # 安装构建依赖
 RUN apk add --no-cache git
@@ -39,19 +36,13 @@ COPY go.mod go.sum ./
 ARG TARGETOS
 ARG TARGETARCH
 RUN --mount=type=cache,target=/go/pkg/mod,id=gomod-${TARGETOS}-${TARGETARCH},sharing=locked \
-    --mount=type=secret,id=gh_pat \
-    GH_TOKEN="$(cat /run/secrets/gh_pat 2>/dev/null || true)" && \
-    if [ -z "${GH_TOKEN}" ]; then GH_TOKEN="${GH_PAT}"; fi && \
-    if [ -n "${GH_TOKEN}" ]; then \
-      git config --global url."https://x-access-token:${GH_TOKEN}@github.com/iniwex5/".insteadOf "https://github.com/iniwex5/"; \
-    fi && \
-    go mod download && \
-    if [ -n "${GH_TOKEN}" ]; then \
-      git config --global --unset-all url."https://x-access-token:${GH_TOKEN}@github.com/iniwex5/".insteadOf || true; \
-    fi
+    go mod download
 
 # 复制源代码
-COPY . .
+COPY cmd ./cmd
+COPY internal ./internal
+COPY pkg ./pkg
+COPY engine ./engine
 
 # 复制构建好的前端资源到 internal/web/dist 以便嵌入
 COPY --from=frontend-builder /app/web/dist ./internal/web/dist/
@@ -63,15 +54,9 @@ RUN ls -la internal/web/dist/ && echo "Frontend assets copied successfully"
 # 挂载 Go 构建缓存和模块缓存，加速重复构建
 RUN --mount=type=cache,target=/root/.cache/go-build,id=gobuild-${TARGETOS}-${TARGETARCH},sharing=locked \
     --mount=type=cache,target=/go/pkg/mod,id=gomod-${TARGETOS}-${TARGETARCH},sharing=locked \
-    --mount=type=secret,id=gh_pat \
-    GH_TOKEN="$(cat /run/secrets/gh_pat 2>/dev/null || true)" && \
-    if [ -z "${GH_TOKEN}" ]; then GH_TOKEN="${GH_PAT}"; fi && \
-    if [ -n "${GH_TOKEN}" ]; then \
-      git config --global url."https://x-access-token:${GH_TOKEN}@github.com/iniwex5/".insteadOf "https://github.com/iniwex5/"; \
-    fi && \
     go mod tidy && \
     CGO_ENABLED=0 GOOS=${TARGETOS} GOARCH=${TARGETARCH} \
-    go build -trimpath -buildvcs=false -tags "with_utls nomsgpack" -ldflags "-s -w -X 'github.com/iniwex5/vohive/internal/global.Version=${VERSION}' -X 'github.com/iniwex5/vohive/internal/global.BuildTime=${BUILDTIME}'" -o vo-hive ./cmd/vohive && \
+    go build -trimpath -buildvcs=false -tags "with_utls nomsgpack" -ldflags "-s -w -X 'github.com/boa-z/vohive/internal/global.Version=${VERSION}' -X 'github.com/boa-z/vohive/internal/global.BuildTime=${BUILDTIME}'" -o vo-hive ./cmd/vohive && \
     if [ "${ENABLE_UPX}" = "1" ] || [ "${ENABLE_UPX}" = "true" ]; then \
       echo "UPX enabled, compressing binary..."; \
       (apk add --no-cache upx >/dev/null 2>&1 || apk add --no-cache upx-ucl >/dev/null 2>&1 || true); \
@@ -82,9 +67,6 @@ RUN --mount=type=cache,target=/root/.cache/go-build,id=gobuild-${TARGETOS}-${TAR
       fi; \
     else \
       echo "UPX disabled."; \
-    fi && \
-    if [ -n "${GH_TOKEN}" ]; then \
-      git config --global --unset-all url."https://x-access-token:${GH_TOKEN}@github.com/iniwex5/".insteadOf || true; \
     fi && \
     ls -lh /app/vo-hive
 

@@ -5,9 +5,9 @@ import (
 	"strings"
 	"time"
 
+	"github.com/boa-z/vohive/internal/config"
+	"github.com/boa-z/vohive/internal/notify"
 	"github.com/gin-gonic/gin"
-	"github.com/iniwex5/vohive/internal/config"
-	"github.com/iniwex5/vohive/internal/notify"
 )
 
 type testEmailRequest struct {

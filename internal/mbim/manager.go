@@ -11,10 +11,10 @@ import (
 	"sync/atomic"
 	"time"
 
-	"github.com/iniwex5/vohive/internal/apduarbiter"
-	"github.com/iniwex5/vohive/internal/simaid"
-	"github.com/iniwex5/vohive/pkg/logger"
-	"github.com/iniwex5/vohive/pkg/mbim"
+	"github.com/boa-z/vohive/internal/apduarbiter"
+	"github.com/boa-z/vohive/internal/simaid"
+	"github.com/boa-z/vohive/pkg/logger"
+	"github.com/boa-z/vohive/pkg/mbim"
 )
 
 const defaultMaxControlTransfer = 4096

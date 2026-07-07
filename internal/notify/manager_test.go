@@ -10,8 +10,8 @@ import (
 	"testing"
 	"time"
 
-	"github.com/iniwex5/vohive/internal/config"
-	"github.com/iniwex5/vohive/pkg/logger"
+	"github.com/boa-z/vohive/internal/config"
+	"github.com/boa-z/vohive/pkg/logger"
 )
 
 type captureChannel struct {

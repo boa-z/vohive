@@ -1,8 +1,8 @@
 services:
   vohive:
     build:
-      context: ..  # 使用父目录作为构建上下文，以便访问 quectel-qmi-go 和 swu-go
-      dockerfile: vohive/Dockerfile
+      context: .
+      dockerfile: Dockerfile
     image: vohive:latest
     container_name: vohive
     restart: unless-stopped

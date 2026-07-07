@@ -10,8 +10,8 @@ import (
 	"sync"
 	"time"
 
-	"github.com/iniwex5/vohive/internal/config"
-	"github.com/iniwex5/vohive/pkg/logger"
+	"github.com/boa-z/vohive/internal/config"
+	"github.com/boa-z/vohive/pkg/logger"
 )
 
 // BarkChannel 实现 Channel 接口的 Bark 通知渠道

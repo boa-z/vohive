@@ -45,14 +45,14 @@ func TestVoWiFiHostImportsExternalRuntimehostOnly(t *testing.T) {
 			rel, _ := filepath.Rel(repoRoot, path)
 			for _, spec := range file.Imports {
 				importPath := strings.Trim(spec.Path.Value, `"`)
-				if strings.HasPrefix(importPath, "github.com/iniwex5/"+"vowifi-go/engine/") {
+				if strings.HasPrefix(importPath, "github.com/boa-z/"+"vowifi-go/engine/") {
 					continue
 				}
-				if strings.HasPrefix(importPath, "github.com/iniwex5/"+"vowifi-go/") && !allowedVoWiFiImports[importPath] {
+				if strings.HasPrefix(importPath, "github.com/boa-z/"+"vowifi-go/") && !allowedVoWiFiImports[importPath] {
 					offenders = append(offenders, rel+": imports non-public VoWiFi package "+importPath)
 				}
-				if importPath == "github.com/iniwex5/"+"vohive/internal/vowifi" ||
-					strings.HasPrefix(importPath, "github.com/iniwex5/"+"vohive/internal/vowifi/") {
+				if importPath == "github.com/boa-z/"+"vohive/internal/vowifi" ||
+					strings.HasPrefix(importPath, "github.com/boa-z/"+"vohive/internal/vowifi/") {
 					offenders = append(offenders, rel+": imports old internal VoWiFi")
 				}
 			}

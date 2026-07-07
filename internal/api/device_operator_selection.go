@@ -5,11 +5,11 @@ import (
 	"net/http"
 	"time"
 
+	"github.com/boa-z/vohive/internal/backend"
+	"github.com/boa-z/vohive/internal/config"
+	"github.com/boa-z/vohive/internal/device"
+	"github.com/boa-z/vohive/pkg/logger"
 	"github.com/gin-gonic/gin"
-	"github.com/iniwex5/vohive/internal/backend"
-	"github.com/iniwex5/vohive/internal/config"
-	"github.com/iniwex5/vohive/internal/device"
-	"github.com/iniwex5/vohive/pkg/logger"
 )
 
 type operatorScanResponse struct {

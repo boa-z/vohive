@@ -49,7 +49,7 @@ Quectel USBNET mode values.
 
 ## Next Boundary
 
-The QMI control implementation still imports `github.com/iniwex5/quectel-qmi-go`.
+The QMI control implementation still imports `github.com/boa-z/quectel-qmi-go`.
 Before adding more modem families, wrap that dependency behind a local package
 whose public names are vendor-neutral, then move Quectel-specific assumptions
 into adapter code. The current `backend.DeviceBackend` and modem `ATDialect`

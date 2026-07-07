@@ -3,8 +3,8 @@ package vowifihost
 import (
 	"strings"
 
+	"github.com/boa-z/vohive/pkg/logger"
 	"github.com/boa-z/vowifi-go/runtimehost"
-	"github.com/iniwex5/vohive/pkg/logger"
 )
 
 func (m *Manager) BeginStart(deviceID string) StartClaim {

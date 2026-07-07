@@ -7,7 +7,7 @@ import (
 	"testing"
 	"time"
 
-	"github.com/iniwex5/vohive/internal/config"
+	"github.com/boa-z/vohive/internal/config"
 )
 
 func TestQMIConvergenceShouldEscalate(t *testing.T) {

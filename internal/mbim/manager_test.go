@@ -5,7 +5,7 @@ import (
 	"testing"
 	"time"
 
-	"github.com/iniwex5/vohive/pkg/mbim"
+	"github.com/boa-z/vohive/pkg/mbim"
 )
 
 func TestManagerControlDevice(t *testing.T) {

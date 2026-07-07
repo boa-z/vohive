@@ -5,7 +5,7 @@ import (
 	"testing"
 	"time"
 
-	qmimanager "github.com/iniwex5/quectel-qmi-go/pkg/manager"
+	qmimanager "github.com/boa-z/quectel-qmi-go/pkg/manager"
 )
 
 type mockStartupUIMResetter struct {

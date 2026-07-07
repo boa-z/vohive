@@ -1,18 +1,17 @@
-module github.com/iniwex5/vohive
+module github.com/boa-z/vohive
 
 go 1.26.3
 
 require (
-	github.com/boa-z/vowifi-go v0.0.0-20260707133029-758a776cebfb
+	github.com/boa-z/quectel-qmi-go v0.0.0-20260707165359-f491bb1251c4
+	github.com/boa-z/vowifi-go v0.0.0-20260707165519-8211ef707365
 	github.com/damonto/euicc-go v1.1.3-0.20260628013808-8d873a2dfc98
 	github.com/emiago/sipgo v1.4.0
 	github.com/gin-gonic/gin v1.11.0
 	github.com/glebarez/sqlite v1.11.0
 	github.com/go-telegram-bot-api/telegram-bot-api/v5 v5.5.1
 	github.com/google/uuid v1.6.0
-	github.com/iniwex5/netlink v1.3.3
-	github.com/iniwex5/qqbot v1.0.1
-	github.com/iniwex5/quectel-qmi-go v0.6.0
+	github.com/gorilla/websocket v1.5.3
 	github.com/larksuite/oapi-sdk-go/v3 v3.5.3
 	github.com/lestrrat-go/file-rotatelogs v2.4.0+incompatible
 	github.com/miekg/dns v1.1.67
@@ -20,6 +19,7 @@ require (
 	github.com/spf13/viper v1.21.0
 	github.com/stretchr/testify v1.11.1
 	github.com/things-go/go-socks5 v0.1.1
+	github.com/vishvananda/netlink v1.3.1
 	github.com/warthog618/sms v0.3.0
 	go.bug.st/serial v1.6.4
 	go.uber.org/zap v1.27.1
@@ -56,7 +56,6 @@ require (
 	github.com/goccy/go-yaml v1.18.0 // indirect
 	github.com/gogo/protobuf v1.3.2 // indirect
 	github.com/google/pprof v0.0.0-20231101202521-4ca4178f5c7a // indirect
-	github.com/gorilla/websocket v1.5.3 // indirect
 	github.com/icholy/digest v1.1.0 // indirect
 	github.com/jinzhu/inflection v1.0.0 // indirect
 	github.com/jinzhu/now v1.1.5 // indirect

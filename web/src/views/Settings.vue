@@ -275,7 +275,7 @@ async function doApplyUpdate() {
 
   if (updateInfo.value.is_docker) {
     ElMessageBox.alert(
-      '检测到当前系统运行在 Docker 环境下。<br><br>不建议在 Docker 容器内直接执行文件热替换。请直接通过拉取最新镜像（如 <code>docker pull iniwex5/vohive:latest</code>）并重启容器来完成升级！',
+      '检测到当前系统运行在 Docker 环境下。<br><br>不建议在 Docker 容器内直接执行文件热替换。请直接通过拉取最新镜像（如 <code>docker pull boa-z/vohive:latest</code>）并重启容器来完成升级！',
       '环境警告',
       { dangerouslyUseHTMLString: true, type: 'warning' }
     )

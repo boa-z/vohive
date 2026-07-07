@@ -10,7 +10,7 @@ import (
 	"sync"
 	"time"
 
-	qmimanager "github.com/iniwex5/quectel-qmi-go/pkg/manager"
+	qmimanager "github.com/boa-z/quectel-qmi-go/pkg/manager"
 )
 
 // QMIDevice 表示通过 sysfs 静态枚举到的 QMI 设备拓扑信息。

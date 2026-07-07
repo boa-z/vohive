@@ -10,15 +10,15 @@ import (
 	"syscall"
 	"time"
 
-	"github.com/iniwex5/vohive/internal/global"
-	"github.com/iniwex5/vohive/pkg/logger"
+	"github.com/boa-z/vohive/internal/global"
+	"github.com/boa-z/vohive/pkg/logger"
 	"github.com/minio/selfupdate"
 	"golang.org/x/mod/semver"
 )
 
 const (
-	repoOwner = "iniwex5"
-	repoName  = "vohive-release"
+	repoOwner = "boa-z"
+	repoName  = "vohive"
 )
 
 type Release struct {

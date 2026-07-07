@@ -14,8 +14,8 @@ import (
 	"sync"
 	"time"
 
-	"github.com/iniwex5/vohive/internal/config"
-	"github.com/iniwex5/vohive/pkg/logger"
+	"github.com/boa-z/vohive/internal/config"
+	"github.com/boa-z/vohive/pkg/logger"
 )
 
 // webhookPayload 定义 Webhook 推送的 JSON 结构

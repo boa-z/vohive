@@ -131,7 +131,7 @@ environment:
 
 ## 📖 文档
 
-完整文档请访问: [GitHub](https://github.com/iniwex5/vohive)
+完整文档请访问: [GitHub](https://github.com/boa-z/vohive)
 
 ## 📝 License
 

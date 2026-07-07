@@ -4,9 +4,9 @@ import (
 	"strings"
 	"time"
 
+	"github.com/boa-z/vohive/internal/db"
+	"github.com/boa-z/vohive/internal/smsnotify"
 	"github.com/boa-z/vowifi-go/runtimehost/eventhost"
-	"github.com/iniwex5/vohive/internal/db"
-	"github.com/iniwex5/vohive/internal/smsnotify"
 )
 
 const vowifiReceivedSMSDuplicateWindow = 30 * time.Minute

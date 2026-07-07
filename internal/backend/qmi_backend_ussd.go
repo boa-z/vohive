@@ -7,8 +7,8 @@ import (
 	"strings"
 	"time"
 
-	"github.com/iniwex5/quectel-qmi-go/pkg/qmi"
-	"github.com/iniwex5/vohive/pkg/logger"
+	"github.com/boa-z/quectel-qmi-go/pkg/qmi"
+	"github.com/boa-z/vohive/pkg/logger"
 )
 
 // QMI VOICE uses QmiVoiceUssDataCodingScheme, not the AT+CUSD GSM DCS value.

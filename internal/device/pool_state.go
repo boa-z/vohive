@@ -4,8 +4,8 @@ import (
 	"strings"
 	"time"
 
-	"github.com/iniwex5/vohive/internal/backend"
-	"github.com/iniwex5/vohive/internal/modem"
+	"github.com/boa-z/vohive/internal/backend"
+	"github.com/boa-z/vohive/internal/modem"
 )
 
 // deviceIdentityState 存储设备/SIM卡相对静态的身份标识信息

@@ -8,8 +8,8 @@ import (
 	"net/http"
 	"strings"
 
-	"github.com/iniwex5/vohive/internal/config"
-	"github.com/iniwex5/vohive/pkg/logger"
+	"github.com/boa-z/vohive/internal/config"
+	"github.com/boa-z/vohive/pkg/logger"
 )
 
 type PushplusChannel struct {

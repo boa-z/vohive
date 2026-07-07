@@ -6,10 +6,10 @@ import (
 	"strings"
 	"time"
 
+	"github.com/boa-z/vohive/internal/modem"
+	"github.com/boa-z/vohive/pkg/logger"
 	"github.com/boa-z/vowifi-go/runtimehost"
 	"github.com/boa-z/vowifi-go/runtimehost/identity"
-	"github.com/iniwex5/vohive/internal/modem"
-	"github.com/iniwex5/vohive/pkg/logger"
 )
 
 func (p *Pool) buildVoWiFiStartProfile(worker *Worker, traceID string) (identity.Profile, error) {
