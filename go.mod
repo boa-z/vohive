@@ -4,7 +4,7 @@ go 1.26.3
 
 require (
 	github.com/boa-z/quectel-qmi-go v0.0.0-20260707171930-eb8aaeb9c404
-	github.com/boa-z/vowifi-go v0.0.0-20260707173220-d51aca196f30
+	github.com/boa-z/vowifi-go v0.0.0-20260707174813-1d4c2b4113ed
 	github.com/damonto/euicc-go v1.1.3-0.20260628013808-8d873a2dfc98
 	github.com/emiago/sipgo v1.4.0
 	github.com/gin-gonic/gin v1.11.0
