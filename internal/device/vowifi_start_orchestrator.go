@@ -322,8 +322,8 @@ func (p *Pool) beforeVoWiFiStart(deviceID string, modemIface runtimehost.Modem, 
 			})
 			if probeErr != nil {
 				startupState.LastErrorClass = "proxy"
-				startupState.LastError = probeErr.Error()
-				startupState.LastReason = probeRes.FailureSummary()
+				startupState.LastError = runtimehost.SafeDiagnosticError(probeErr)
+				startupState.LastReason = runtimehost.SafeDiagnosticString(probeRes.FailureSummary())
 				p.recordVoWiFiStartupState(deviceID, startupState)
 				return fmt.Errorf("前置代理自检失败: %w", probeErr)
 			}

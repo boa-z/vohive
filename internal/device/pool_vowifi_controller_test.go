@@ -203,6 +203,40 @@ func TestHandleVoWiFiStartupErrorAPDUBusyStaysBelowWarn(t *testing.T) {
 	}
 }
 
+func TestHandleVoWiFiStartupErrorRedactsDiagnosticLogs(t *testing.T) {
+	logger.Setup(logger.LogConfig{Debug: true, Filename: filepath.Join(t.TempDir(), "app.log")})
+	p := NewPool(&config.Config{})
+	defer p.cancel()
+	ch := logger.GlobalBroadcaster.Subscribe()
+	defer logger.GlobalBroadcaster.Unsubscribe(ch)
+
+	localPath := "/" + strings.Join([]string{"home", "boa", "vohive", "runtime.log"}, "/")
+	rawErr := errors.New(`SWU tunnel establishment failed: read udp 192.168.31.34:44789->87.194.9.8:4500: i/o timeout; ` +
+		`sip:310280233641503@ims.example; WWW-Authenticate: Digest nonce="recover-secret"; path=` + localPath)
+
+	if err := p.handleVoWiFiStartupError("trace-redact", "dev-redact", "", 0, time.Now(), &Worker{ID: "dev-redact"}, runtimehost.State{LastErrorClass: "swu"}, rawErr); err != rawErr {
+		t.Fatalf("handleVoWiFiStartupError() returned %v, want original error", err)
+	}
+
+	entries := drainLoggerEntries(ch)
+	for _, suffix := range []string{"VoWiFi 启动失败", "VoWiFi 失败汇总"} {
+		entry, ok := findLogSuffix(entries, suffix)
+		if !ok {
+			t.Fatalf("log %q not found in %+v", suffix, entries)
+		}
+		fields := readLogFields(t, entry)
+		encoded := fmt.Sprintf("%+v", fields)
+		for _, leak := range []string{"192.168.31.34", "87.194.9.8", "310280233641503", "recover-secret", localPath} {
+			if strings.Contains(encoded, leak) {
+				t.Fatalf("log %q leaked %q in fields %s", suffix, leak, encoded)
+			}
+		}
+		if !strings.Contains(encoded, "<redacted") || !strings.Contains(encoded, ".invalid") || !strings.Contains(encoded, "<redacted-local-path>") {
+			t.Fatalf("log %q fields do not show expected redaction markers: %s", suffix, encoded)
+		}
+	}
+}
+
 func drainLoggerEntries(ch <-chan logger.LogEntry) []logger.LogEntry {
 	entries := make([]logger.LogEntry, 0)
 	for {
@@ -213,6 +247,15 @@ func drainLoggerEntries(ch <-chan logger.LogEntry) []logger.LogEntry {
 			return entries
 		}
 	}
+}
+
+func findLogSuffix(entries []logger.LogEntry, suffix string) (logger.LogEntry, bool) {
+	for _, entry := range entries {
+		if strings.HasSuffix(entry.Message, suffix) {
+			return entry, true
+		}
+	}
+	return logger.LogEntry{}, false
 }
 
 func countLogSuffix(entries []logger.LogEntry, level, suffix string) int {
