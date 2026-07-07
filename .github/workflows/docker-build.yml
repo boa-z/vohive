@@ -62,7 +62,7 @@ jobs:
           file: Dockerfile.github
           platforms: ${{ inputs.platforms }}
           push: ${{ inputs.push == 'true' }}
-          tags: ghcr.io/${{ github.repository }}/vohive:dev
+          tags: ghcr.io/${{ github.repository }}:dev
           provenance: false
           sbom: false
           cache-from: type=gha

@@ -55,11 +55,11 @@ dependency_hygiene() {
 
 	forbidden_refs="$(
 		{
-			git grep -nE 'github[.]com/iniwex5|github[.]com/boa-z/qqbot|vohive[-]release|GO[.]?PRIVATE|GO[.]?NOSUMDB|GH[_]PAT' -- \
-				go.mod go.sum .github Dockerfile Dockerfile.github docker-compose.yml Makefile scripts internal cmd pkg web/src \
+			git grep -nE 'github[.]com/iniwex5|github[.]com/boa-z/qqbot|iniwex[/]vohive|DOCKERHUB[_]|secrets[.]DOCKERHUB|vohive[-]release|GO[.]?PRIVATE|GO[.]?NOSUMDB|GH[_]PAT' -- \
+				go.mod go.sum .github Dockerfile Dockerfile.github Dockerfile.runtime docker-compose.yml docker-compose.hub.yml DOCKERHUB.md Makefile scripts internal cmd pkg web/src \
 				':!internal/web/dist/**' ':!web/dist/**' || true
 			git grep -nE 'replace[[:space:]].*=>[[:space:]]*(\.{1,2}/|/|~)' -- \
-				go.mod go.sum .github Dockerfile Dockerfile.github docker-compose.yml Makefile scripts internal cmd pkg web/src \
+				go.mod go.sum .github Dockerfile Dockerfile.github Dockerfile.runtime docker-compose.yml docker-compose.hub.yml DOCKERHUB.md Makefile scripts internal cmd pkg web/src \
 				':!internal/web/dist/**' ':!web/dist/**' || true
 		} | sed '/^$/d'
 	)"

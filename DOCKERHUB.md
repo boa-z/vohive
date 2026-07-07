@@ -34,7 +34,7 @@ EOF
 ```yaml
 services:
   vohive:
-    image: iniwex/vohive:latest
+    image: ghcr.io/boa-z/vohive:latest
     container_name: vohive
     restart: unless-stopped
     ports:
