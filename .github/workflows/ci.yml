@@ -10,13 +10,9 @@ on:
 permissions:
   contents: read
 
-env:
-  GOWORK: off
-  GO_TEST_PACKAGES: ./internal/device ./internal/mbim ./internal/qmi ./internal/backend ./internal/esim ./internal/cscall ./internal/proxy/traffic ./internal/notify ./internal/qqbot/...
-
 jobs:
   go:
-    name: Go, Web Assets, And Dependency Hygiene
+    name: Local CI Entry Point
     runs-on: ubuntu-latest
     timeout-minutes: 30
 
@@ -40,52 +36,5 @@ jobs:
           cache: 'npm'
           cache-dependency-path: web/package-lock.json
 
-      - name: Verify dependency hygiene
-        shell: bash
-        run: |
-          set -euo pipefail
-
-          test ! -f go.work
-
-          forbidden_refs="$(
-            {
-              git grep -nE 'github[.]com/iniwex5|github[.]com/boa-z/qqbot|vohive[-]release|GO[.]?PRIVATE|GO[.]?NOSUMDB|GH[_]PAT' -- \
-                go.mod go.sum .github Dockerfile Dockerfile.github docker-compose.yml Makefile internal cmd pkg web/src \
-                ':!internal/web/dist/**' ':!web/dist/**' || true
-              git grep -nE 'replace[[:space:]].*=>[[:space:]]*(\.{1,2}/|/|~)' -- \
-                go.mod go.sum .github Dockerfile Dockerfile.github docker-compose.yml Makefile internal cmd pkg web/src \
-                ':!internal/web/dist/**' ':!web/dist/**' || true
-            } | sed '/^$/d'
-          )"
-
-          if [[ -n "${forbidden_refs}" ]]; then
-            printf 'forbidden dependency or local-path references found:\n%s\n' "${forbidden_refs}" >&2
-            exit 1
-          fi
-
-          if go list -m all | grep -E 'github[.]com/iniwex5|github[.]com/boa-z/qqbot'; then
-            printf 'forbidden modules resolved by go list -m all\n' >&2
-            exit 1
-          fi
-
-      - name: Build frontend assets
-        shell: bash
-        run: |
-          npm ci --prefix web
-          npm run build --prefix web
-          rm -rf internal/web/dist
-          mkdir -p internal/web
-          cp -R web/dist internal/web/dist
-
-      - name: Check go.mod tidiness
-        run: go mod tidy -diff
-
-      - name: Run Go tests
-        shell: bash
-        run: |
-          read -r -a packages <<< "${GO_TEST_PACKAGES}"
-          go test "${packages[@]}"
-
-      - name: Build VoHive binary
-        run: |
-          CGO_ENABLED=0 GOOS=linux go build -trimpath -buildvcs=false -tags "with_utls nomsgpack" -o /tmp/vohive ./cmd/vohive
+      - name: Run local CI entry point
+        run: make ci

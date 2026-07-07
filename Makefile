@@ -7,6 +7,7 @@ VERSION_TAG = $(if $(filter v%,$(VERSION)),$(VERSION),v$(VERSION))
 BUILD_TIME ?= $(shell date "+%Y-%m-%d %H:%M:%S")
 DIST_DIR ?= dist
 MAIN_PACKAGE ?= ./cmd/vohive
+CI ?= ./scripts/ci.sh
 
 LDFLAGS = -s -w -X 'github.com/boa-z/vohive/internal/global.Version=$(VERSION)' -X 'github.com/boa-z/vohive/internal/global.BuildTime=$(BUILD_TIME)'
 GO_BUILD = go build -trimpath -buildvcs=false -tags "$(GO_TAGS)" -ldflags "$(LDFLAGS)"
@@ -17,9 +18,12 @@ ARMV7_OUT = $(DIST_DIR)/$(BINARY_NAME)_$(VERSION_TAG)_linux_armv7
 UPX ?= $(shell command -v upx || command -v upx-ucl)
 UPX_FLAGS ?= --best --lzma
 
-.PHONY: all build build-amd64 build-arm64 build-armv7 build-all frontend-dist clean
+.PHONY: all ci build build-amd64 build-arm64 build-armv7 build-all frontend-dist clean
 
 all: build-all
+
+ci:
+	GO_BIN="$${GO_BIN:-$$(command -v go 2>/dev/null || printf /usr/local/go/bin/go)}" $(CI)
 
 build: build-amd64
 
