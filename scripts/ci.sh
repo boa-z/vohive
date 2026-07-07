@@ -148,6 +148,18 @@ container_hygiene() {
 		printf 'docker workflows must authenticate against ghcr.io when pushing\n' >&2
 		return 1
 	fi
+	if ! git grep -nF 'name: Validate container release gates' -- "$publish" >/dev/null; then
+		printf 'docker publish workflow must validate repository gates before building images\n' >&2
+		return 1
+	fi
+	if ! git grep -nF './scripts/ci.sh workflow-lint hygiene release-hygiene container-hygiene tidy test' -- "$publish" >/dev/null; then
+		printf 'docker publish validate job must run local release gates\n' >&2
+		return 1
+	fi
+	if ! git grep -nF 'needs: validate' -- "$publish" >/dev/null; then
+		printf 'docker publish build job must depend on validate\n' >&2
+		return 1
+	fi
 	if ! git grep -nF 'image: ${VOHIVE_IMAGE:-ghcr.io/boa-z/vohive:latest}' -- "$compose" >/dev/null; then
 		printf 'prebuilt compose file must default to the current GHCR image\n' >&2
 		return 1
