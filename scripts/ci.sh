@@ -100,6 +100,18 @@ release_hygiene() {
 		printf 'release workflow must read metadata from the current GitHub repository\n' >&2
 		return 1
 	fi
+	if ! git grep -nF 'name: Validate release gates' -- "$workflow" >/dev/null; then
+		printf 'release workflow must validate repository gates before building artifacts\n' >&2
+		return 1
+	fi
+	if ! git grep -nF './scripts/ci.sh workflow-lint hygiene release-hygiene container-hygiene tidy test' -- "$workflow" >/dev/null; then
+		printf 'release workflow validate job must run local release gates\n' >&2
+		return 1
+	fi
+	if ! git grep -nF 'needs: validate' -- "$workflow" >/dev/null; then
+		printf 'release workflow artifact jobs must depend on validate\n' >&2
+		return 1
+	fi
 	printf '\n==> release hygiene ok\n'
 }
 
