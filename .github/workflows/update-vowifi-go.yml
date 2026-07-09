@@ -1,0 +1,66 @@
+name: Update vowifi-go Dependency
+
+on:
+  schedule:
+    - cron: '17 20 * * *'
+  workflow_dispatch:
+    inputs:
+      vowifi_ref:
+        description: vowifi-go ref, branch, tag, commit, or version.
+        required: false
+        default: main
+
+permissions:
+  contents: write
+  pull-requests: write
+
+concurrency:
+  group: update-vowifi-go
+  cancel-in-progress: false
+
+jobs:
+  update:
+    name: Update vowifi-go
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+    env:
+      VOWIFI_VERSION: ${{ github.event.inputs.vowifi_ref || 'main' }}
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Set up Go
+        uses: actions/setup-go@v5
+        with:
+          go-version-file: go.mod
+          cache: true
+          cache-dependency-path: |
+            go.mod
+            go.sum
+
+      - name: Set up Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+          cache: 'npm'
+          cache-dependency-path: web/package-lock.json
+
+      - name: Update vowifi-go module
+        run: ./scripts/update-vowifi-go.sh
+
+      - name: Run local CI before opening PR
+        run: make ci
+
+      - name: Create update pull request
+        uses: peter-evans/create-pull-request@v6
+        with:
+          branch: automation/update-vowifi-go
+          delete-branch: true
+          commit-message: 'chore: update vowifi-go dependency'
+          title: 'chore: update vowifi-go dependency'
+          body: |
+            Automated update for `github.com/boa-z/vowifi-go`.
+
+            This workflow runs `scripts/update-vowifi-go.sh` and `make ci`
+            before opening or updating the pull request.
