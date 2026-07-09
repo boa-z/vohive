@@ -132,6 +132,18 @@ container_hygiene() {
 		printf 'container build configuration must not reference DockerHub or legacy images\n' >&2
 		return 1
 	fi
+	if git grep -nF 'golang:1.24-alpine' -- Dockerfile Dockerfile.github; then
+		printf 'Docker builder images must track the go.mod toolchain family\n' >&2
+		return 1
+	fi
+	if [[ "$(git grep -nF 'golang:1.26-alpine' -- Dockerfile Dockerfile.github | wc -l | tr -d ' ')" -lt 2 ]]; then
+		printf 'Docker builder images must use golang:1.26-alpine for Go 1.26 modules\n' >&2
+		return 1
+	fi
+	if git grep -nE 'go mod tidy([[:space:]]|&|$)' -- Dockerfile Dockerfile.github; then
+		printf 'Docker builds must not run go mod tidy; CI tidy gates should catch dependency drift before image build\n' >&2
+		return 1
+	fi
 	if git grep -nF 'ghcr.io/${{ github.repository }}/vohive' -- "$publish" "$build"; then
 		printf 'container build configuration must not duplicate the vohive image path\n' >&2
 		return 1

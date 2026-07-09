@@ -7,7 +7,7 @@ COPY web/ .
 RUN npm run build
 
 # 构建阶段 2: 后端构建 (Backend)
-FROM golang:1.24-alpine AS backend-builder
+FROM golang:1.26-alpine AS backend-builder
 WORKDIR /app
 
 # 启用 Go 工具链自动下载
@@ -34,8 +34,8 @@ COPY --from=frontend-builder /app/web/dist ./internal/web/dist/
 # 验证前端资源已复制
 RUN ls -la internal/web/dist/ && echo "Frontend assets copied successfully"
 
-# 整理依赖并编译二进制
-RUN go mod tidy
+# 验证依赖并编译二进制；依赖整理必须在提交前由 CI 的 tidy gate 完成。
+RUN go mod verify
 RUN VERSION=$(git describe --tags --always --dirty || echo "unknown") && \
     BUILD_TIME=$(date "+%Y-%m-%d %H:%M:%S") && \
     CGO_ENABLED=0 GOOS=linux go build -trimpath -buildvcs=false -tags "with_utls nomsgpack" -ldflags "-s -w -X 'github.com/boa-z/vohive/internal/global.Version=${VERSION}' -X 'github.com/boa-z/vohive/internal/global.BuildTime=${BUILD_TIME}'" -o /app/vo-hive ./cmd/vohive
