@@ -25,7 +25,6 @@ RUN go mod download
 COPY cmd ./cmd
 COPY internal ./internal
 COPY pkg ./pkg
-COPY engine ./engine
 
 # 复制构建好的前端资源到 internal/web/dist 以便嵌入
 # 必须在 go build 之前完成

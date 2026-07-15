@@ -42,7 +42,6 @@ RUN --mount=type=cache,target=/go/pkg/mod,id=gomod-${TARGETOS}-${TARGETARCH},sha
 COPY cmd ./cmd
 COPY internal ./internal
 COPY pkg ./pkg
-COPY engine ./engine
 
 # 复制构建好的前端资源到 internal/web/dist 以便嵌入
 COPY --from=frontend-builder /app/web/dist ./internal/web/dist/
