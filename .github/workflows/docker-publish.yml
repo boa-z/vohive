@@ -95,10 +95,12 @@ jobs:
             false|0|no|off) ENABLE_UPX=0 ;;
             *) ENABLE_UPX=1 ;;
           esac
-          echo "version=${VERSION}" >> "${GITHUB_OUTPUT}"
-          echo "buildtime=${BUILDTIME}" >> "${GITHUB_OUTPUT}"
-          echo "revision=${REVISION}" >> "${GITHUB_OUTPUT}"
-          echo "enable_upx=${ENABLE_UPX}" >> "${GITHUB_OUTPUT}"
+          {
+            echo "version=${VERSION}"
+            echo "buildtime=${BUILDTIME}"
+            echo "revision=${REVISION}"
+            echo "enable_upx=${ENABLE_UPX}"
+          } >> "${GITHUB_OUTPUT}"
 
       - name: Build and push
         uses: docker/build-push-action@v5
