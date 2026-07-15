@@ -6,6 +6,7 @@ import (
 	"strings"
 	"time"
 
+	"github.com/boa-z/vohive/internal/upstreamproxy"
 	swusim "github.com/boa-z/vowifi-go/engine/sim"
 	"github.com/boa-z/vowifi-go/runtimehost"
 	"github.com/boa-z/vowifi-go/runtimehost/eventhost"
@@ -90,7 +91,7 @@ func (m *Manager) StartRuntime(ctx context.Context, req RuntimeStartRequest) (Ru
 		networkMode = strings.TrimSpace(req.Prepared.NetworkMode)
 	}
 
-	inst, err := m.runtimeStarter()(ctx, runtimehost.StartRequest{
+	startReq := runtimehost.StartRequest{
 		Mode:          runtimehost.StartModeMain,
 		DeviceID:      deviceID,
 		TraceID:       strings.TrimSpace(req.TraceID),
@@ -109,7 +110,17 @@ func (m *Manager) StartRuntime(ctx context.Context, req RuntimeStartRequest) (Ru
 		ShouldRun: func() bool {
 			return ctx.Err() == nil && m.ShouldRun(deviceID, req.Epoch)
 		},
-	})
+	}
+	if proxy := req.Prepared.Proxy; proxy != nil && proxy.Enabled && (strings.TrimSpace(proxy.Addr) != "" ||
+		strings.TrimSpace(proxy.Address) != "" ||
+		strings.TrimSpace(proxy.URL) != "") {
+		// The upstream default tunnel manager uses direct UDP sockets even when
+		// StartRequest.Proxy is populated. Inject the VoHive SOCKS5 UDP transport
+		// so both IKE and ESP/NAT-T use the selected country proxy.
+		startReq.TunnelManagerFactory = upstreamproxy.NewVoWiFiTunnelManager
+	}
+
+	inst, err := m.runtimeStarter()(ctx, startReq)
 	if err != nil {
 		return RuntimeStartResult{}, err
 	}
