@@ -205,9 +205,10 @@ func (p *Pool) AddWorkerFromConfig(devCfg config.DeviceConfig) (*Worker, error) 
 		p.mu.Unlock()
 		return nil, fmt.Errorf("设备 %s 正在初始化中，请勿重复触发", devCfg.ID)
 	}
-	if FreeDeviceLimitReached(len(p.workers)) {
+	limit := p.FreeDeviceLimit()
+	if FreeDeviceLimitReached(len(p.workers), limit) {
 		p.mu.Unlock()
-		return nil, fmt.Errorf("%s", FreeDeviceWorkerLimitMessage())
+		return nil, fmt.Errorf("%s", FreeDeviceWorkerLimitMessage(limit))
 	}
 	p.rebuilding[devCfg.ID] = true
 	attempt := p.beginRebuildAttemptLocked(devCfg.ID)

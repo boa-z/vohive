@@ -779,7 +779,7 @@ func (s *Server) handleDeviceMgmtList(c *gin.Context) {
 		items = append(items, item)
 	}
 
-	c.JSON(http.StatusOK, gin.H{"devices": items, "device_limit": device.DefaultFreeDeviceLimit})
+	c.JSON(http.StatusOK, gin.H{"devices": items, "device_limit": s.pool.FreeDeviceLimit()})
 }
 
 // handleDeviceMgmtRefreshInfo 主动触发设备底层重新采集各种信息（SIM、信号等）
@@ -1473,9 +1473,9 @@ func validateDeviceBackendConfig(cfg config.DeviceConfig) error {
 	return nil
 }
 
-func validateFreeDeviceConfigLimit(devices []config.DeviceConfig) error {
-	if device.FreeDeviceLimitReached(len(devices)) {
-		return fmt.Errorf("%s", device.FreeDeviceAddLimitMessage())
+func validateFreeDeviceConfigLimit(devices []config.DeviceConfig, limit int) error {
+	if device.FreeDeviceLimitReached(len(devices), limit) {
+		return fmt.Errorf("%s", device.FreeDeviceAddLimitMessage(limit))
 	}
 	return nil
 }
@@ -1509,7 +1509,7 @@ func (s *Server) handleDeviceMgmtAddDevice(c *gin.Context) {
 		})
 		return
 	}
-	if err := validateFreeDeviceConfigLimit(config.ListDevices()); err != nil {
+	if err := validateFreeDeviceConfigLimit(config.ListDevices(), s.pool.FreeDeviceLimit()); err != nil {
 		c.JSON(http.StatusConflict, gin.H{"status": "error", "message": err.Error()})
 		return
 	}

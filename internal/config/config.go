@@ -16,6 +16,7 @@ const (
 	MBIMTransportAuto          = "auto"
 	MBIMTransportProxy         = "proxy"
 	MBIMTransportDirect        = "direct"
+	DefaultFreeDeviceLimit     = 5
 	DefaultWebhookTextTemplate = "{{device_label}} {{text}}"
 )
 
@@ -90,12 +91,13 @@ func ResolveIPFamily(in string) (enableV4 bool, enableV6 bool, err error) {
 }
 
 type Config struct {
-	Server   ServerConfig   `mapstructure:"server"`
-	Devices  []DeviceConfig `mapstructure:"devices"`
-	Telegram TelegramConfig `mapstructure:"telegram"`
-	Feishu   FeishuConfig   `mapstructure:"feishu"`
-	QQ       QQConfig       `mapstructure:"qq"`
-	Webhook  WebhookConfig  `mapstructure:"webhook"`
+	Server          ServerConfig   `mapstructure:"server"`
+	FreeDeviceLimit int            `mapstructure:"free_device_limit"` // 0 means unlimited
+	Devices         []DeviceConfig `mapstructure:"devices"`
+	Telegram        TelegramConfig `mapstructure:"telegram"`
+	Feishu          FeishuConfig   `mapstructure:"feishu"`
+	QQ              QQConfig       `mapstructure:"qq"`
+	Webhook         WebhookConfig  `mapstructure:"webhook"`
 
 	Bark     BarkConfig     `mapstructure:"bark"`
 	Email    EmailConfig    `mapstructure:"email"`
@@ -394,6 +396,7 @@ func Load(path string) (*Config, error) {
 	viper.SetConfigType("yaml")
 
 	// 默认值设置
+	viper.SetDefault("free_device_limit", DefaultFreeDeviceLimit)
 	viper.SetDefault("server.port", 7575)
 	viper.SetDefault("webhook.timeout_ms", 5000)
 	viper.SetDefault("webhook.retry_max", 3)
@@ -427,6 +430,9 @@ func Load(path string) (*Config, error) {
 	var cfg Config
 	if err := viper.Unmarshal(&cfg); err != nil {
 		return nil, fmt.Errorf("解析配置文件失败: %w", err)
+	}
+	if cfg.FreeDeviceLimit < 0 {
+		return nil, fmt.Errorf("free_device_limit 不能小于 0（0 表示无限制）")
 	}
 
 	// 兼容旧版单值配置: feishu.chat_id

@@ -11,7 +11,7 @@ import (
 
 // TestPoolAddWorkerFromConfigRejectsFourthWorkerBeforeHardwareInit 测试当设备数量达到限制时，添加新设备应该被限额策略拒绝
 func TestPoolAddWorkerFromConfigRejectsFourthWorkerBeforeHardwareInit(t *testing.T) {
-	p := NewPool(&config.Config{})
+	p := NewPool(&config.Config{FreeDeviceLimit: DefaultFreeDeviceLimit})
 	for i := 1; i <= DefaultFreeDeviceLimit; i++ {
 		id := fmt.Sprintf("dev%d", i)
 		p.workers[id] = &Worker{ID: id, Config: config.DeviceConfig{ID: id}}
@@ -23,8 +23,8 @@ func TestPoolAddWorkerFromConfigRejectsFourthWorkerBeforeHardwareInit(t *testing
 	if err == nil {
 		t.Fatal("AddWorkerFromConfig() error = nil, want device limit error")
 	}
-	if !strings.Contains(err.Error(), FreeDeviceWorkerLimitMessage()) {
-		t.Fatalf("AddWorkerFromConfig() error = %q, want %q", err.Error(), FreeDeviceWorkerLimitMessage())
+	if !strings.Contains(err.Error(), FreeDeviceWorkerLimitMessage(p.FreeDeviceLimit())) {
+		t.Fatalf("AddWorkerFromConfig() error = %q, want %q", err.Error(), FreeDeviceWorkerLimitMessage(p.FreeDeviceLimit()))
 	}
 	if len(p.workers) != DefaultFreeDeviceLimit {
 		t.Fatalf("worker count = %d, want %d", len(p.workers), DefaultFreeDeviceLimit)
@@ -33,7 +33,7 @@ func TestPoolAddWorkerFromConfigRejectsFourthWorkerBeforeHardwareInit(t *testing
 
 // TestPoolAddWorkerFromConfigKeepsExistingDeviceErrorBeforeLimitError 测试即使达到设备限制，当尝试添加一个已存在的同名设备时，应该优先返回“设备已存在”错误而非限制错误
 func TestPoolAddWorkerFromConfigKeepsExistingDeviceErrorBeforeLimitError(t *testing.T) {
-	p := NewPool(&config.Config{})
+	p := NewPool(&config.Config{FreeDeviceLimit: DefaultFreeDeviceLimit})
 	for i := 1; i <= DefaultFreeDeviceLimit; i++ {
 		id := fmt.Sprintf("dev%d", i)
 		p.workers[id] = &Worker{ID: id, Config: config.DeviceConfig{ID: id}}
@@ -50,7 +50,7 @@ func TestPoolAddWorkerFromConfigKeepsExistingDeviceErrorBeforeLimitError(t *test
 
 // TestFreeDeviceLimitAllowsRebuildAfterRemovingWorker 测试移除某个设备后，已使用的配额应被释放，从而允许重新添加/启动设备
 func TestFreeDeviceLimitAllowsRebuildAfterRemovingWorker(t *testing.T) {
-	p := NewPool(&config.Config{})
+	p := NewPool(&config.Config{FreeDeviceLimit: DefaultFreeDeviceLimit})
 	for i := 1; i <= DefaultFreeDeviceLimit; i++ {
 		id := fmt.Sprintf("dev%d", i)
 		p.workers[id] = &Worker{ID: id, Config: config.DeviceConfig{ID: id}}
@@ -58,7 +58,7 @@ func TestFreeDeviceLimitAllowsRebuildAfterRemovingWorker(t *testing.T) {
 	if err := p.RemoveWorker("dev1"); err != nil {
 		t.Fatalf("RemoveWorker() error = %v", err)
 	}
-	if FreeDeviceLimitReached(len(p.workers)) {
+	if FreeDeviceLimitReached(len(p.workers), p.FreeDeviceLimit()) {
 		t.Fatalf("FreeDeviceLimitReached(%d) = true, want false after removal", len(p.workers))
 	}
 }
@@ -198,5 +198,41 @@ func TestStartBootstrapWatchdogStopsWhenSignaled(t *testing.T) {
 	p.mu.RUnlock()
 	if !stillRebuilding {
 		t.Fatal("watchdog fired after being stopped, want rebuilding flag untouched")
+	}
+}
+
+func TestFreeDeviceLimitPolicySupportsConfiguredAndUnlimited(t *testing.T) {
+	devices := []config.DeviceConfig{
+		{ID: "dev1"},
+		{ID: "dev2"},
+		{ID: "dev3"},
+	}
+
+	configured := NewPool(&config.Config{FreeDeviceLimit: 2})
+	if got := configured.FreeDeviceLimit(); got != 2 {
+		t.Fatalf("FreeDeviceLimit() = %d, want 2", got)
+	}
+	if FreeDeviceLimitReached(1, configured.FreeDeviceLimit()) {
+		t.Fatal("configured limit reached before boundary")
+	}
+	if !FreeDeviceLimitReached(2, configured.FreeDeviceLimit()) {
+		t.Fatal("configured limit not reached at boundary")
+	}
+	if FreeDeviceLimitAllowsConfiguredDevice(devices, "dev3", configured.FreeDeviceLimit()) {
+		t.Fatal("third configured device allowed with limit 2")
+	}
+	if got := FreeDeviceWorkerLimitMessage(configured.FreeDeviceLimit()); !strings.Contains(got, "2") {
+		t.Fatalf("configured limit message = %q, want limit 2", got)
+	}
+
+	unlimited := NewPool(&config.Config{FreeDeviceLimit: 0})
+	if got := unlimited.FreeDeviceLimit(); got != 0 {
+		t.Fatalf("FreeDeviceLimit() = %d, want unlimited sentinel 0", got)
+	}
+	if FreeDeviceLimitReached(1000, unlimited.FreeDeviceLimit()) {
+		t.Fatal("unlimited policy reported limit reached")
+	}
+	if !FreeDeviceLimitAllowsConfiguredDevice(devices, "dev3", unlimited.FreeDeviceLimit()) {
+		t.Fatal("unlimited policy rejected configured device")
 	}
 }

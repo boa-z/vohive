@@ -609,6 +609,10 @@ paths:
                     type: array
                     items:
                       $ref: '#/components/schemas/DeviceMgmtListItem'
+                  device_limit:
+                    type: integer
+                    minimum: 0
+                    description: 可管理设备数上限，0 表示无限制
         '401':
           $ref: '#/components/responses/Unauthorized'
     post:

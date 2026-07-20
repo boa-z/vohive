@@ -19,6 +19,9 @@ server:
   port: 7575
   debug: false
 
+# 可管理设备数上限，0 表示无限制
+free_device_limit: 5
+
 web:
   username: admin
   # 首次登录后请在 Web 界面修改密码

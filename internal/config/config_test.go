@@ -231,3 +231,97 @@ webhook:
 		}
 	}
 }
+
+func TestLoadFreeDeviceLimit(t *testing.T) {
+	tests := []struct {
+		name    string
+		content string
+		want    int
+	}{
+		{
+			name: "default",
+			content: `
+server:
+  port: 7575
+`,
+			want: DefaultFreeDeviceLimit,
+		},
+		{
+			name: "configured",
+			content: `
+free_device_limit: 12
+`,
+			want: 12,
+		},
+		{
+			name: "unlimited",
+			content: `
+free_device_limit: 0
+`,
+			want: 0,
+		},
+	}
+
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			cfg, err := Load(writeTempConfig(t, tt.content))
+			if err != nil {
+				t.Fatalf("Load() error = %v", err)
+			}
+			if cfg.FreeDeviceLimit != tt.want {
+				t.Fatalf("FreeDeviceLimit = %d, want %d", cfg.FreeDeviceLimit, tt.want)
+			}
+		})
+	}
+}
+
+func TestLoadFreeDeviceLimitFromEnvironment(t *testing.T) {
+	t.Setenv("PROXY_FREE_DEVICE_LIMIT", "9")
+	cfg, err := Load(writeTempConfig(t, `
+server:
+  port: 7575
+`))
+	if err != nil {
+		t.Fatalf("Load() error = %v", err)
+	}
+	if cfg.FreeDeviceLimit != 9 {
+		t.Fatalf("FreeDeviceLimit = %d, want 9", cfg.FreeDeviceLimit)
+	}
+}
+
+func TestLoadRejectsNegativeFreeDeviceLimit(t *testing.T) {
+	_, err := Load(writeTempConfig(t, `
+free_device_limit: -1
+`))
+	if err == nil || !strings.Contains(err.Error(), "free_device_limit") {
+		t.Fatalf("Load() error = %v, want free_device_limit validation error", err)
+	}
+}
+
+func TestConfigUpdatesPreserveFreeDeviceLimit(t *testing.T) {
+	path := writeTempConfig(t, `
+free_device_limit: 0
+devices: []
+`)
+	if err := AddDeviceInFile(path, DeviceConfig{ID: "dev1"}); err != nil {
+		t.Fatalf("AddDeviceInFile() error = %v", err)
+	}
+	if err := UpdateNotificationInFile(path,
+		TelegramConfig{},
+		FeishuConfig{},
+		QQConfig{},
+		WebhookConfig{},
+		BarkConfig{},
+		EmailConfig{},
+		PushplusConfig{},
+	); err != nil {
+		t.Fatalf("UpdateNotificationInFile() error = %v", err)
+	}
+	raw, err := os.ReadFile(path)
+	if err != nil {
+		t.Fatalf("ReadFile() error = %v", err)
+	}
+	if !strings.Contains(string(raw), "free_device_limit: 0") {
+		t.Fatalf("free_device_limit was not preserved:\n%s", raw)
+	}
+}
