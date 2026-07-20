@@ -1529,7 +1529,12 @@ func (s *Server) handleDeviceMgmtAddDevice(c *gin.Context) {
 		newCfg = enrichedCfg
 	}
 
-	if err := config.AddDeviceInFile(s.configPath, newCfg); err != nil {
+	if err := config.AddDeviceInFileWithLimit(s.configPath, newCfg, s.pool.FreeDeviceLimit()); err != nil {
+		var limitErr *config.DeviceLimitError
+		if errors.As(err, &limitErr) {
+			c.JSON(http.StatusConflict, gin.H{"status": "error", "message": device.FreeDeviceAddLimitMessage(limitErr.Limit)})
+			return
+		}
 		logger.Error("写入新设备配置失败", "err", err)
 		c.JSON(http.StatusInternalServerError, gin.H{"status": "error", "message": "写入配置失败: " + err.Error()})
 		return

@@ -23,6 +23,21 @@ func (p *Pool) FreeDeviceLimit() int {
 	return NormalizeFreeDeviceLimit(p.cfg.FreeDeviceLimit)
 }
 
+// occupiedDeviceSlotsLocked returns the number of unique worker IDs that are
+// either registered or currently reserving a startup slot. p.mu must be held.
+func (p *Pool) occupiedDeviceSlotsLocked() int {
+	occupied := len(p.workers)
+	for deviceID, rebuilding := range p.rebuilding {
+		if !rebuilding {
+			continue
+		}
+		if _, registered := p.workers[deviceID]; !registered {
+			occupied++
+		}
+	}
+	return occupied
+}
+
 func FreeDeviceLimitReached(count, limit int) bool {
 	limit = NormalizeFreeDeviceLimit(limit)
 	return limit > 0 && count >= limit

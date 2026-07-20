@@ -1,6 +1,7 @@
 package config
 
 import (
+	"errors"
 	"os"
 	"path/filepath"
 	"strings"
@@ -323,5 +324,49 @@ devices: []
 	}
 	if !strings.Contains(string(raw), "free_device_limit: 0") {
 		t.Fatalf("free_device_limit was not preserved:\n%s", raw)
+	}
+}
+
+func TestAddDeviceInFileWithLimitSerializesCheckAndWrite(t *testing.T) {
+	path := writeTempConfig(t, `
+free_device_limit: 1
+devices: []
+`)
+	start := make(chan struct{})
+	results := make(chan error, 2)
+	for _, id := range []string{"dev1", "dev2"} {
+		id := id
+		go func() {
+			<-start
+			results <- AddDeviceInFileWithLimit(path, DeviceConfig{ID: id}, 1)
+		}()
+	}
+	close(start)
+
+	successes := 0
+	limitFailures := 0
+	for i := 0; i < 2; i++ {
+		err := <-results
+		if err == nil {
+			successes++
+			continue
+		}
+		var limitErr *DeviceLimitError
+		if errors.As(err, &limitErr) && limitErr.Limit == 1 {
+			limitFailures++
+			continue
+		}
+		t.Fatalf("AddDeviceInFileWithLimit() unexpected error = %v", err)
+	}
+	if successes != 1 || limitFailures != 1 {
+		t.Fatalf("successes=%d limitFailures=%d, want 1/1", successes, limitFailures)
+	}
+
+	cfg, err := Load(path)
+	if err != nil {
+		t.Fatalf("Load() error = %v", err)
+	}
+	if len(cfg.Devices) != 1 {
+		t.Fatalf("persisted devices = %d, want 1", len(cfg.Devices))
 	}
 }

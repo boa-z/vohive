@@ -236,3 +236,69 @@ func TestFreeDeviceLimitPolicySupportsConfiguredAndUnlimited(t *testing.T) {
 		t.Fatal("unlimited policy rejected configured device")
 	}
 }
+
+func TestPoolDeviceLimitCountsInFlightStartupReservations(t *testing.T) {
+	p := NewPool(&config.Config{FreeDeviceLimit: 1})
+	defer p.cancel()
+	p.mu.Lock()
+	p.rebuilding["dev1"] = true
+	p.rebuildAttempt["dev1"] = 1
+	p.mu.Unlock()
+
+	_, err := p.AddWorkerFromConfig(config.DeviceConfig{ID: "dev2"})
+	if err == nil || !strings.Contains(err.Error(), FreeDeviceWorkerLimitMessage(1)) {
+		t.Fatalf("AddWorkerFromConfig() error = %v, want in-flight device limit error", err)
+	}
+	p.mu.RLock()
+	dev2Reserved := p.rebuilding["dev2"]
+	p.mu.RUnlock()
+	if dev2Reserved {
+		t.Fatal("rejected worker unexpectedly reserved a startup slot")
+	}
+}
+
+func TestOccupiedDeviceSlotsDoesNotDoubleCountRegisteredWorker(t *testing.T) {
+	p := NewPool(&config.Config{FreeDeviceLimit: 2})
+	defer p.cancel()
+	p.mu.Lock()
+	p.workers["dev1"] = &Worker{ID: "dev1"}
+	p.rebuilding["dev1"] = true
+
+	occupied := p.occupiedDeviceSlotsLocked()
+	p.mu.Unlock()
+	if occupied != 1 {
+		t.Fatalf("occupiedDeviceSlotsLocked() = %d, want 1", occupied)
+	}
+
+	p.mu.Lock()
+	p.rebuilding["dev2"] = true
+	occupied = p.occupiedDeviceSlotsLocked()
+	p.mu.Unlock()
+	if occupied != 2 {
+		t.Fatalf("occupiedDeviceSlotsLocked() = %d, want 2", occupied)
+	}
+}
+
+func TestBootstrapWatchdogInvalidatesTimedOutAttemptBeforeRegistration(t *testing.T) {
+	p := NewPool(&config.Config{FreeDeviceLimit: 1})
+	defer p.cancel()
+	p.mu.Lock()
+	p.rebuilding["dev1"] = true
+	p.rebuildAttempt["dev1"] = 1
+	p.mu.Unlock()
+
+	stop := p.startBootstrapWatchdog("dev1", 1, 20*time.Millisecond)
+	defer close(stop)
+	if !p.waitWorkerInitSettled("dev1", 2*time.Second) {
+		t.Fatal("watchdog did not release timed-out startup reservation")
+	}
+	if p.isRebuildAttemptCurrent("dev1", 1) {
+		t.Fatal("timed-out startup attempt remained current")
+	}
+	if err := p.registerWorkerStartingForAttempt(&Worker{ID: "dev1"}, 1); err == nil {
+		t.Fatal("timed-out startup attempt registered a worker")
+	}
+	if worker := p.GetWorker("dev1"); worker != nil {
+		t.Fatalf("timed-out startup registered worker: %#v", worker)
+	}
+}

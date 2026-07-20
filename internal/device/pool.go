@@ -311,6 +311,25 @@ func (p *Pool) registerWorkerStarting(worker *Worker) error {
 	return nil
 }
 
+func (p *Pool) registerWorkerStartingForAttempt(worker *Worker, attempt uint64) error {
+	if p == nil || worker == nil || strings.TrimSpace(worker.ID) == "" {
+		return fmt.Errorf("worker_nil")
+	}
+	p.mu.Lock()
+	defer p.mu.Unlock()
+	if p.rebuildAttempt[worker.ID] != attempt || !p.rebuilding[worker.ID] {
+		return fmt.Errorf("设备 %s 启动流程已失效", worker.ID)
+	}
+	if current := p.workers[worker.ID]; current != nil && current != worker {
+		return fmt.Errorf("设备已存在")
+	}
+	p.workers[worker.ID] = worker
+	if worker.generation == 0 {
+		worker.generation = p.nextWorkerGenerationLocked(worker.ID)
+	}
+	return nil
+}
+
 func (p *Pool) removeWorkerRegistrationIfCurrent(worker *Worker) {
 	if p == nil || worker == nil || strings.TrimSpace(worker.ID) == "" {
 		return
@@ -1096,7 +1115,7 @@ func (p *Pool) endRebuildAttemptIfCurrent(deviceID string, attempt uint64) {
 
 // startBootstrapWatchdog 为单次 AddWorkerFromConfig 执行设置硬上限看门狗。
 // 如果启动流程在 deadline 内既没有成功完成、也没有被更新的尝试取代，
-// 看门狗会强制释放 rebuilding 标记，让设备重新可以被重试或删除；
+// 看门狗会作废本次 attempt 并释放 rebuilding 标记，让设备重新可以被重试或删除；
 // 调用方应在自身正常返回时 close 掉返回的 stop channel 以避免看门狗误触发日志。
 func (p *Pool) startBootstrapWatchdog(deviceID string, attempt uint64, deadline time.Duration) chan struct{} {
 	stop := make(chan struct{})
@@ -1113,11 +1132,12 @@ func (p *Pool) startBootstrapWatchdog(deviceID string, attempt uint64, deadline 
 		p.mu.Lock()
 		isCurrent := p.rebuildAttempt[deviceID] == attempt
 		if isCurrent {
+			p.rebuildAttempt[deviceID]++
 			delete(p.rebuilding, deviceID)
 		}
 		p.mu.Unlock()
 		if isCurrent {
-			logger.Warn("QMI worker 启动看门狗超时，强制释放 rebuilding 标记，设备可能仍在后台初始化",
+			logger.Warn("QMI worker 启动看门狗超时，作废当前 attempt 并释放 rebuilding 标记",
 				"device", deviceID,
 				"deadline", deadline.String())
 		}
