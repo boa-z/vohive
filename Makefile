@@ -7,7 +7,8 @@ VERSION_TAG = $(if $(filter v%,$(VERSION)),$(VERSION),v$(VERSION))
 BUILD_TIME ?= $(shell date "+%Y-%m-%d %H:%M:%S")
 DIST_DIR ?= dist
 MAIN_PACKAGE ?= ./cmd/vohive
-CI ?= ./scripts/ci.sh
+# GitHub Actions exports CI=true, so keep the script path in a distinct variable.
+CI_SCRIPT ?= ./scripts/ci.sh
 
 LDFLAGS = -s -w -X 'github.com/zanescope/vohive/internal/global.Version=$(VERSION)' -X 'github.com/zanescope/vohive/internal/global.BuildTime=$(BUILD_TIME)'
 GO_BUILD = go build -trimpath -buildvcs=false -tags "$(GO_TAGS)" -ldflags "$(LDFLAGS)"
@@ -23,7 +24,7 @@ UPX_FLAGS ?= --best --lzma
 all: build-all
 
 ci:
-	GO_BIN="$${GO_BIN:-$$(command -v go 2>/dev/null || printf /usr/local/go/bin/go)}" $(CI)
+	GO_BIN="$${GO_BIN:-$$(command -v go 2>/dev/null || printf /usr/local/go/bin/go)}" $(CI_SCRIPT)
 
 build: build-amd64
 
