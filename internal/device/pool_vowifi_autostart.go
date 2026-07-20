@@ -3,7 +3,7 @@ package device
 import (
 	"time"
 
-	"github.com/boa-z/vohive/pkg/logger"
+	"github.com/zanescope/vohive/pkg/logger"
 )
 
 const vowifiInitialAutoStartReason = "startup_auto"

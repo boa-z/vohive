@@ -7,10 +7,10 @@ import (
 	"strings"
 	"time"
 
-	"github.com/boa-z/vohive/internal/db"
-	"github.com/boa-z/vowifi-go/runtimehost"
-	"github.com/boa-z/vowifi-go/runtimehost/messaging"
-	"github.com/boa-z/vowifi-go/runtimehost/voicehost"
+	"github.com/zanescope/vohive/internal/db"
+	"github.com/zanescope/vowifi-go/runtimehost"
+	"github.com/zanescope/vowifi-go/runtimehost/messaging"
+	"github.com/zanescope/vowifi-go/runtimehost/voicehost"
 )
 
 // ---------- 通用命令 handler（TG 和飞书共用） ----------

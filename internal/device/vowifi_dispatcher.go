@@ -4,9 +4,9 @@ import (
 	"context"
 	"strings"
 
-	"github.com/boa-z/vohive/internal/smsnotify"
-	"github.com/boa-z/vohive/pkg/logger"
-	"github.com/boa-z/vowifi-go/runtimehost/eventhost"
+	"github.com/zanescope/vohive/internal/smsnotify"
+	"github.com/zanescope/vohive/pkg/logger"
+	"github.com/zanescope/vowifi-go/runtimehost/eventhost"
 )
 
 type poolVoWiFiRuntimeDispatcher struct {

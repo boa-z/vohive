@@ -5,8 +5,8 @@ import (
 	"testing"
 	"time"
 
-	"github.com/boa-z/vohive/internal/backend"
-	"github.com/boa-z/vohive/pkg/smscodec"
+	"github.com/zanescope/vohive/internal/backend"
+	"github.com/zanescope/vohive/pkg/smscodec"
 )
 
 func TestSMSModeMBIMString(t *testing.T) {

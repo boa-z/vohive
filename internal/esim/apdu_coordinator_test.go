@@ -5,7 +5,7 @@ import (
 	"sync"
 	"testing"
 
-	"github.com/boa-z/vohive/internal/apduarbiter"
+	"github.com/zanescope/vohive/internal/apduarbiter"
 )
 
 func TestAPDUCoordinatorChanMuIsStablePerChannel(t *testing.T) {

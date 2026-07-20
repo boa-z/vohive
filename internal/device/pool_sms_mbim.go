@@ -6,9 +6,9 @@ import (
 	"fmt"
 	"time"
 
-	"github.com/boa-z/vohive/internal/backend"
-	"github.com/boa-z/vohive/pkg/logger"
-	"github.com/boa-z/vohive/pkg/smscodec"
+	"github.com/zanescope/vohive/internal/backend"
+	"github.com/zanescope/vohive/pkg/logger"
+	"github.com/zanescope/vohive/pkg/smscodec"
 )
 
 func decodeMBIMDeliverPDUHex(pduHex string) (sender, text string, ts time.Time, concat smscodec.ConcatInfo, err error) {

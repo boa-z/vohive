@@ -16,10 +16,10 @@ import (
 	"time"
 	"unicode/utf16"
 
-	"github.com/boa-z/vohive/internal/apduarbiter"
-	"github.com/boa-z/vohive/internal/config"
-	"github.com/boa-z/vohive/pkg/logger"
-	"github.com/boa-z/vohive/pkg/smscodec"
+	"github.com/zanescope/vohive/internal/apduarbiter"
+	"github.com/zanescope/vohive/internal/config"
+	"github.com/zanescope/vohive/pkg/logger"
+	"github.com/zanescope/vohive/pkg/smscodec"
 	"github.com/warthog618/sms/encoding/gsm7"
 
 	"go.bug.st/serial"

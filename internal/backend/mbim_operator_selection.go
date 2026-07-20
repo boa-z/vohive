@@ -3,7 +3,7 @@ package backend
 import (
 	"context"
 
-	"github.com/boa-z/vohive/pkg/mbim"
+	"github.com/zanescope/vohive/pkg/mbim"
 )
 
 func (b *MBIMBackend) ScanOperators(ctx context.Context) ([]OperatorCandidate, error) {

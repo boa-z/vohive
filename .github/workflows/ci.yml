@@ -1,6 +1,8 @@
 name: CI
 
 on:
+  schedule:
+    - cron: '43 19 * * *'
   push:
     branches:
       - main
@@ -38,3 +40,116 @@ jobs:
 
       - name: Run local CI entry point
         run: make ci
+
+      - name: Run full Go test suite
+        run: go test -count=1 ./...
+
+  stack:
+    name: Three-repository zanescope stack
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+
+    steps:
+      - name: Checkout VoHive
+        uses: actions/checkout@v4
+        with:
+          path: vohive
+
+      - name: Checkout vowifi-go
+        uses: actions/checkout@v4
+        with:
+          repository: ${{ format('{0}/vowifi-go', github.repository_owner) }}
+          ref: main
+          path: vowifi-go
+
+      - name: Checkout quectel-qmi-go
+        uses: actions/checkout@v4
+        with:
+          repository: ${{ format('{0}/quectel-qmi-go', github.repository_owner) }}
+          ref: master
+          path: quectel-qmi-go
+
+      - name: Set up Go
+        uses: actions/setup-go@v5
+        with:
+          go-version-file: vohive/go.mod
+          cache: true
+          cache-dependency-path: |
+            vohive/go.mod
+            vohive/go.sum
+            vowifi-go/go.mod
+            vowifi-go/go.sum
+            quectel-qmi-go/go.mod
+            quectel-qmi-go/go.sum
+
+      - name: Set up Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+          cache: 'npm'
+          cache-dependency-path: vohive/web/package-lock.json
+
+      - name: Build VoHive web assets
+        working-directory: vohive
+        env:
+          GOWORK: off
+        run: ./scripts/ci.sh web
+
+      - name: Create temporary Go workspace
+        run: go work init ./vohive ./vowifi-go ./quectel-qmi-go
+
+      - name: Resolve pinned dependencies from local fork HEADs
+        shell: bash
+        run: |
+          vowifi_version="$(awk '$1 == "github.com/zanescope/vowifi-go" { print $2; exit }' vohive/go.mod)"
+          qmi_version="$(awk '$1 == "github.com/zanescope/quectel-qmi-go" { print $2; exit }' vohive/go.mod)"
+          if [[ -z "$vowifi_version" || -z "$qmi_version" ]]; then
+            printf 'VoHive must directly require versioned zanescope dependencies\n' >&2
+            exit 1
+          fi
+          go work edit "-replace=github.com/zanescope/vowifi-go@${vowifi_version}=./vowifi-go"
+          go work edit "-replace=github.com/zanescope/quectel-qmi-go@${qmi_version}=./quectel-qmi-go"
+          go work sync
+          printf 'Using local vowifi-go HEAD for %s\n' "$vowifi_version"
+          printf 'Using local quectel-qmi-go HEAD for %s\n' "$qmi_version"
+
+      - name: Verify local fork modules
+        shell: bash
+        run: |
+          for module in \
+            github.com/zanescope/vohive \
+            github.com/zanescope/vowifi-go \
+            github.com/zanescope/quectel-qmi-go; do
+            resolved="$(go list -m -f '{{.Path}}{{if .Main}} local{{end}}' "$module")"
+            printf '%s\n' "$resolved"
+            if [[ "$resolved" != "$module local" ]]; then
+              printf 'module %s did not resolve to its local checkout\n' "$module" >&2
+              exit 1
+            fi
+          done
+
+          modules="$(go list -m all)"
+          legacy_modules="$(printf '%s\n' "$modules" | grep -E '^github[.]com/(boa-z|iniwex5)/(vohive|vowifi-go|quectel-qmi-go)([[:space:]]|$)' || true)"
+          if [[ -n "$legacy_modules" ]]; then
+            printf 'legacy modules resolved in workspace:\n%s\n' "$legacy_modules" >&2
+            exit 1
+          fi
+
+          dependencies="$(cd vohive && go list -deps ./cmd/vohive)"
+          legacy_packages="$(printf '%s\n' "$dependencies" | grep -E '^github[.]com/(boa-z|iniwex5)/(vohive|vowifi-go|quectel-qmi-go)(/|$)' || true)"
+          if [[ -n "$legacy_packages" ]]; then
+            printf 'legacy packages resolved in workspace:\n%s\n' "$legacy_packages" >&2
+            exit 1
+          fi
+
+      - name: Run full VoHive tests against fork HEADs
+        working-directory: vohive
+        run: go test -count=1 ./...
+
+      - name: Build Linux amd64 VoHive against fork HEADs
+        working-directory: vohive
+        env:
+          CGO_ENABLED: '0'
+          GOOS: linux
+          GOARCH: amd64
+        run: go build -trimpath -buildvcs=false -tags 'with_utls nomsgpack' -o '${{ runner.temp }}/vohive' ./cmd/vohive

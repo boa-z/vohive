@@ -3,8 +3,8 @@ package device
 import (
 	"testing"
 
-	"github.com/boa-z/vohive/internal/config"
-	"github.com/boa-z/vohive/internal/modem"
+	"github.com/zanescope/vohive/internal/config"
+	"github.com/zanescope/vohive/internal/modem"
 )
 
 func TestWorkerResolvedATPortPrefersConfig(t *testing.T) {

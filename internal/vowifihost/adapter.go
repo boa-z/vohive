@@ -6,8 +6,8 @@ import (
 	"strings"
 	"time"
 
-	"github.com/boa-z/vowifi-go/runtimehost"
-	"github.com/boa-z/vowifi-go/runtimehost/identity"
+	"github.com/zanescope/vowifi-go/runtimehost"
+	"github.com/zanescope/vowifi-go/runtimehost/identity"
 )
 
 type PreparedStart struct {

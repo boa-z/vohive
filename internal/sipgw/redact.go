@@ -1,7 +1,7 @@
 package sipgw
 
 import (
-	"github.com/boa-z/vohive/pkg/logger"
+	"github.com/zanescope/vohive/pkg/logger"
 )
 
 func shouldLogSIPRaw() bool {

@@ -4,7 +4,7 @@ import (
 	"errors"
 	"testing"
 
-	"github.com/boa-z/vohive/internal/config"
+	"github.com/zanescope/vohive/internal/config"
 )
 
 func TestEnsureAddDeviceIMEIBackfillsWhenEmpty(t *testing.T) {

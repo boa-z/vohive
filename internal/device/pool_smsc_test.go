@@ -4,7 +4,7 @@ import (
 	"context"
 	"testing"
 
-	"github.com/boa-z/vohive/internal/backend"
+	"github.com/zanescope/vohive/internal/backend"
 )
 
 type smscResult struct {

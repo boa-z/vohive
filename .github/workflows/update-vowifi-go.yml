@@ -60,7 +60,7 @@ jobs:
           commit-message: 'chore: update vowifi-go dependency'
           title: 'chore: update vowifi-go dependency'
           body: |
-            Automated update for `github.com/boa-z/vowifi-go`.
+            Automated update for `github.com/zanescope/vowifi-go`.
 
             This workflow runs `scripts/update-vowifi-go.sh` and `make ci`
             before opening or updating the pull request.

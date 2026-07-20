@@ -4,7 +4,7 @@ import (
 	"context"
 	"time"
 
-	"github.com/boa-z/vohive/pkg/mbim"
+	"github.com/zanescope/vohive/pkg/mbim"
 )
 
 func (b *MBIMBackend) ExecuteUSSD(ctx context.Context, command string, timeout time.Duration) (*USSDResult, error) {

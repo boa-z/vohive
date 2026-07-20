@@ -46,16 +46,21 @@ workflow_lint() {
 }
 
 dependency_hygiene() {
-	local forbidden_refs forbidden_modules
+	local forbidden_refs forbidden_modules main_module module resolved
 
 	if [[ -f go.work ]]; then
 		printf 'go.work must not be committed or required for CI builds\n' >&2
 		return 1
 	fi
+	main_module="$(env GOWORK=off "$GO_BIN" list -m -f '{{.Path}}')"
+	if [[ "$main_module" != "github.com/zanescope/vohive" ]]; then
+		printf 'module path mismatch: got %s, want github.com/zanescope/vohive\n' "$main_module" >&2
+		return 1
+	fi
 
 	forbidden_refs="$(
 		{
-			git grep -nE 'github[.]com/iniwex5|github[.]com/boa-z/qqbot|iniwex[/]vohive|DOCKERHUB[_]|secrets[.]DOCKERHUB|vohive[-]release|GO[.]?PRIVATE|GO[.]?NOSUMDB|GH[_]PAT' -- \
+			git grep -nE 'github[.]com/(iniwex5|boa-z)|iniwex[/]vohive|DOCKERHUB[_]|secrets[.]DOCKERHUB|vohive[-]release|GO[.]?PRIVATE|GO[.]?NOSUMDB|GH[_]PAT' -- \
 				go.mod go.sum .github Dockerfile Dockerfile.github Dockerfile.runtime docker-compose.yml docker-compose.hub.yml DOCKERHUB.md Makefile scripts internal cmd pkg web/src \
 				':!internal/web/dist/**' ':!web/dist/**' || true
 			git grep -nE 'replace[[:space:]].*=>[[:space:]]*(\.{1,2}/|/|~)' -- \
@@ -68,11 +73,28 @@ dependency_hygiene() {
 		return 1
 	fi
 
-	forbidden_modules="$(env GOWORK=off "$GO_BIN" list -m all | grep -E 'github[.]com/iniwex5|github[.]com/boa-z/qqbot' || true)"
+	forbidden_modules="$(env GOWORK=off "$GO_BIN" list -m all | grep -E 'github[.]com/(iniwex5|boa-z)' || true)"
 	if [[ -n "$forbidden_modules" ]]; then
 		printf 'forbidden modules resolved by go list -m all:\n%s\n' "$forbidden_modules" >&2
 		return 1
 	fi
+
+	if grep -Eq '^[[:space:]]*replace([[:space:]]|$)' go.mod; then
+		printf 'go.mod must consume zanescope modules directly without replace directives\n' >&2
+		return 1
+	fi
+
+	for module in \
+		github.com/zanescope/quectel-qmi-go \
+		github.com/zanescope/vowifi-go; do
+		resolved="$(env GOWORK=off "$GO_BIN" list -m -f '{{.Path}}@{{.Version}}{{with .Replace}} replace={{.Path}}@{{.Version}}{{end}}' "$module")"
+		if [[ "$resolved" != "${module}@v"* || "$resolved" == *" replace="* ]]; then
+			printf 'module %s must resolve directly at a version; got %s\n' \
+				"$module" "${resolved:-<none>}" >&2
+			return 1
+		fi
+		printf '\n==> verified direct dependency: %s\n' "$resolved"
+	done
 
 	printf '\n==> dependency hygiene ok\n'
 }
@@ -184,7 +206,7 @@ container_hygiene() {
 		printf 'manual docker build job must depend on validate\n' >&2
 		return 1
 	fi
-	if ! git grep -nF 'image: ${VOHIVE_IMAGE:-ghcr.io/boa-z/vohive:latest}' -- "$compose" >/dev/null; then
+	if ! git grep -nF 'image: ${VOHIVE_IMAGE:-ghcr.io/zanescope/vohive:latest}' -- "$compose" >/dev/null; then
 		printf 'prebuilt compose file must default to the current GHCR image\n' >&2
 		return 1
 	fi

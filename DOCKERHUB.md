@@ -34,7 +34,7 @@ EOF
 ```yaml
 services:
   vohive:
-    image: ghcr.io/boa-z/vohive:latest
+    image: ghcr.io/zanescope/vohive:latest
     container_name: vohive
     restart: unless-stopped
     ports:
@@ -131,8 +131,8 @@ environment:
 
 ## 📖 文档
 
-完整文档请访问: [GitHub](https://github.com/boa-z/vohive)
+完整文档请访问: [GitHub](https://github.com/zanescope/vohive)
 
 ## 📝 License
 
-MIT License
+PolyForm Noncommercial License 1.0.0; see [LICENSE](LICENSE).

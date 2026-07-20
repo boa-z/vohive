@@ -11,14 +11,14 @@ import (
 	"time"
 	"unicode/utf8"
 
-	"github.com/boa-z/vohive/internal/apduarbiter"
-	"github.com/boa-z/vohive/internal/config"
-	"github.com/boa-z/vohive/internal/netprobe"
-	"github.com/boa-z/vohive/pkg/logger"
+	"github.com/zanescope/vohive/internal/apduarbiter"
+	"github.com/zanescope/vohive/internal/config"
+	"github.com/zanescope/vohive/internal/netprobe"
+	"github.com/zanescope/vohive/pkg/logger"
 
-	qmimanager "github.com/boa-z/quectel-qmi-go/pkg/manager"
-	"github.com/boa-z/quectel-qmi-go/pkg/netcfg"
-	"github.com/boa-z/quectel-qmi-go/pkg/qmi"
+	qmimanager "github.com/zanescope/quectel-qmi-go/pkg/manager"
+	"github.com/zanescope/quectel-qmi-go/pkg/netcfg"
+	"github.com/zanescope/quectel-qmi-go/pkg/qmi"
 	"github.com/miekg/dns"
 )
 

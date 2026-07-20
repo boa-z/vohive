@@ -38,7 +38,7 @@ RUN ls -la internal/web/dist/ && echo "Frontend assets copied successfully"
 RUN go mod verify
 RUN VERSION=$(git describe --tags --always --dirty || echo "unknown") && \
     BUILD_TIME=$(date "+%Y-%m-%d %H:%M:%S") && \
-    CGO_ENABLED=0 GOOS=linux go build -trimpath -buildvcs=false -tags "with_utls nomsgpack" -ldflags "-s -w -X 'github.com/boa-z/vohive/internal/global.Version=${VERSION}' -X 'github.com/boa-z/vohive/internal/global.BuildTime=${BUILD_TIME}'" -o /app/vo-hive ./cmd/vohive
+    CGO_ENABLED=0 GOOS=linux go build -trimpath -buildvcs=false -tags "with_utls nomsgpack" -ldflags "-s -w -X 'github.com/zanescope/vohive/internal/global.Version=${VERSION}' -X 'github.com/zanescope/vohive/internal/global.BuildTime=${BUILD_TIME}'" -o /app/vo-hive ./cmd/vohive
 
 # 运行阶段 (Runtime)
 FROM alpine:latest

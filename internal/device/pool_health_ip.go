@@ -7,11 +7,11 @@ import (
 	"strings"
 	"time"
 
-	"github.com/boa-z/vohive/internal/backend"
-	"github.com/boa-z/vohive/internal/config"
-	"github.com/boa-z/vohive/internal/db"
-	"github.com/boa-z/vohive/internal/modem"
-	"github.com/boa-z/vohive/pkg/logger"
+	"github.com/zanescope/vohive/internal/backend"
+	"github.com/zanescope/vohive/internal/config"
+	"github.com/zanescope/vohive/internal/db"
+	"github.com/zanescope/vohive/internal/modem"
+	"github.com/zanescope/vohive/pkg/logger"
 )
 
 func (p *Pool) suppressQMIUnhealthyEviction(worker *Worker) (bool, string) {

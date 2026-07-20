@@ -4,7 +4,7 @@ import (
 	"errors"
 	"testing"
 
-	"github.com/boa-z/vowifi-go/runtimehost/carrier"
+	"github.com/zanescope/vowifi-go/runtimehost/carrier"
 )
 
 func TestShouldRetryVoWiFiAutoStart(t *testing.T) {

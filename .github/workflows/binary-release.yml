@@ -160,7 +160,7 @@ jobs:
           mkdir -p dist
           CGO_ENABLED=0 GOOS=linux GOARCH=${{ matrix.goarch }} GOARM=${{ matrix.goarm }} \
             go build -trimpath -buildvcs=false -tags "with_utls" \
-            -ldflags "-s -w -X 'github.com/boa-z/vohive/internal/global.Version=${{ steps.vars.outputs.version }}' -X 'github.com/boa-z/vohive/internal/global.BuildTime=${{ steps.vars.outputs.buildtime }}'" \
+            -ldflags "-s -w -X 'github.com/zanescope/vohive/internal/global.Version=${{ steps.vars.outputs.version }}' -X 'github.com/zanescope/vohive/internal/global.BuildTime=${{ steps.vars.outputs.buildtime }}'" \
             -o dist/vo-hive ./cmd/vohive
 
       - name: Install UPX

@@ -6,7 +6,7 @@ import (
 	"strings"
 	"time"
 
-	"github.com/boa-z/vohive/internal/websheet"
+	"github.com/zanescope/vohive/internal/websheet"
 	"github.com/gin-gonic/gin"
 )
 

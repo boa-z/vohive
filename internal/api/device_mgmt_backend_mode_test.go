@@ -4,7 +4,7 @@ import (
 	"strings"
 	"testing"
 
-	"github.com/boa-z/vohive/internal/config"
+	"github.com/zanescope/vohive/internal/config"
 )
 
 func TestValidateDeviceBackendConfigMBIM(t *testing.T) {

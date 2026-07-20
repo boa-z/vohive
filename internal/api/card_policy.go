@@ -5,7 +5,7 @@ import (
 	"fmt"
 	"net/http"
 
-	"github.com/boa-z/vohive/internal/db"
+	"github.com/zanescope/vohive/internal/db"
 	"github.com/gin-gonic/gin"
 )
 

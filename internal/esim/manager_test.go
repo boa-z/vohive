@@ -14,8 +14,8 @@ import (
 	"testing"
 	"time"
 
-	qmiq "github.com/boa-z/quectel-qmi-go/pkg/qmi"
-	"github.com/boa-z/vohive/internal/backend"
+	qmiq "github.com/zanescope/quectel-qmi-go/pkg/qmi"
+	"github.com/zanescope/vohive/internal/backend"
 	"github.com/damonto/euicc-go/bertlv"
 	"github.com/damonto/euicc-go/bertlv/primitive"
 	"github.com/damonto/euicc-go/driver"

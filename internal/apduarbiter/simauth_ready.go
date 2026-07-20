@@ -6,7 +6,7 @@ import (
 	"fmt"
 	"strings"
 
-	"github.com/boa-z/vohive/pkg/logger"
+	"github.com/zanescope/vohive/pkg/logger"
 )
 
 var ErrSIMAuthNotReady = errors.New("simauth not ready")

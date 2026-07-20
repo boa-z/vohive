@@ -3,8 +3,8 @@ package esim
 import (
 	"fmt"
 
-	"github.com/boa-z/vohive/internal/esim/pki"
-	"github.com/boa-z/vohive/pkg/logger"
+	"github.com/zanescope/vohive/internal/esim/pki"
+	"github.com/zanescope/vohive/pkg/logger"
 	"github.com/damonto/euicc-go/bertlv"
 	"github.com/damonto/euicc-go/bertlv/primitive"
 	"github.com/damonto/euicc-go/lpa"

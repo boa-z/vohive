@@ -6,9 +6,9 @@ import (
 	"testing"
 	"time"
 
-	qmimanager "github.com/boa-z/quectel-qmi-go/pkg/manager"
-	"github.com/boa-z/vohive/internal/backend"
-	"github.com/boa-z/vohive/internal/config"
+	qmimanager "github.com/zanescope/quectel-qmi-go/pkg/manager"
+	"github.com/zanescope/vohive/internal/backend"
+	"github.com/zanescope/vohive/internal/config"
 )
 
 type mockReadinessBackend struct {

@@ -5,7 +5,7 @@ import (
 	"strings"
 	"time"
 
-	"github.com/boa-z/vohive/internal/upstreamproxy"
+	"github.com/zanescope/vohive/internal/upstreamproxy"
 	"gorm.io/gorm"
 )
 

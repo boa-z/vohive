@@ -1,6 +1,6 @@
 package api
 
-import "github.com/boa-z/vohive/internal/config"
+import "github.com/zanescope/vohive/internal/config"
 
 func deviceConfigRequiresRestart(old config.DeviceConfig, next config.DeviceConfig) bool {
 	if config.NormalizeIMEI(old.ModemIMEI) != config.NormalizeIMEI(next.ModemIMEI) {

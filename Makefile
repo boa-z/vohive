@@ -9,7 +9,7 @@ DIST_DIR ?= dist
 MAIN_PACKAGE ?= ./cmd/vohive
 CI ?= ./scripts/ci.sh
 
-LDFLAGS = -s -w -X 'github.com/boa-z/vohive/internal/global.Version=$(VERSION)' -X 'github.com/boa-z/vohive/internal/global.BuildTime=$(BUILD_TIME)'
+LDFLAGS = -s -w -X 'github.com/zanescope/vohive/internal/global.Version=$(VERSION)' -X 'github.com/zanescope/vohive/internal/global.BuildTime=$(BUILD_TIME)'
 GO_BUILD = go build -trimpath -buildvcs=false -tags "$(GO_TAGS)" -ldflags "$(LDFLAGS)"
 
 AMD64_OUT = $(DIST_DIR)/$(BINARY_NAME)_$(VERSION_TAG)_linux_amd64

@@ -3,7 +3,7 @@ package device
 import (
 	"testing"
 
-	"github.com/boa-z/vohive/internal/config"
+	"github.com/zanescope/vohive/internal/config"
 )
 
 // 同一颗模组重启后接口名/控制节点/USB 全变,仍必须按 IMEI 认回原配置。

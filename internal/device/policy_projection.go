@@ -4,9 +4,9 @@ import (
 	"strings"
 	"time"
 
-	"github.com/boa-z/vohive/internal/backend"
-	"github.com/boa-z/vohive/internal/cardpolicy"
-	"github.com/boa-z/vohive/pkg/logger"
+	"github.com/zanescope/vohive/internal/backend"
+	"github.com/zanescope/vohive/internal/cardpolicy"
+	"github.com/zanescope/vohive/pkg/logger"
 )
 
 // applyPolicyToWorker 把卡策略投影进 worker.Config 的运行时有效字段。

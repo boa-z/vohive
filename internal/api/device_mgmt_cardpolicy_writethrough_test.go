@@ -6,9 +6,9 @@ import (
 	"strings"
 	"testing"
 
-	"github.com/boa-z/vohive/internal/config"
-	"github.com/boa-z/vohive/internal/db"
-	"github.com/boa-z/vohive/internal/device"
+	"github.com/zanescope/vohive/internal/config"
+	"github.com/zanescope/vohive/internal/db"
+	"github.com/zanescope/vohive/internal/device"
 	"github.com/gin-gonic/gin"
 )
 

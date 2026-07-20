@@ -4,7 +4,7 @@ import (
 	"testing"
 	"time"
 
-	"github.com/boa-z/vohive/internal/db"
+	"github.com/zanescope/vohive/internal/db"
 )
 
 func TestBuildTrafficOverviewFieldsDistinguishesWaitingZeroAndStale(t *testing.T) {

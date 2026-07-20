@@ -6,7 +6,7 @@ import (
 	"sync"
 	"time"
 
-	"github.com/boa-z/vohive/pkg/logger"
+	"github.com/zanescope/vohive/pkg/logger"
 	"github.com/vishvananda/netlink/nl"
 	"golang.org/x/sys/unix"
 )

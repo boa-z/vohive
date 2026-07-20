@@ -8,17 +8,17 @@ import (
 	"sync/atomic"
 	"time"
 
-	"github.com/boa-z/vohive/internal/apduarbiter"
-	"github.com/boa-z/vohive/internal/backend"
-	"github.com/boa-z/vohive/internal/config"
-	"github.com/boa-z/vohive/internal/esim"
-	mbimcore "github.com/boa-z/vohive/internal/mbim"
-	"github.com/boa-z/vohive/internal/modem"
-	qmicore "github.com/boa-z/vohive/internal/qmi"
-	"github.com/boa-z/vohive/pkg/logger"
-	"github.com/boa-z/vohive/pkg/smscodec"
+	"github.com/zanescope/vohive/internal/apduarbiter"
+	"github.com/zanescope/vohive/internal/backend"
+	"github.com/zanescope/vohive/internal/config"
+	"github.com/zanescope/vohive/internal/esim"
+	mbimcore "github.com/zanescope/vohive/internal/mbim"
+	"github.com/zanescope/vohive/internal/modem"
+	qmicore "github.com/zanescope/vohive/internal/qmi"
+	"github.com/zanescope/vohive/pkg/logger"
+	"github.com/zanescope/vohive/pkg/smscodec"
 
-	qmimanager "github.com/boa-z/quectel-qmi-go/pkg/manager"
+	qmimanager "github.com/zanescope/quectel-qmi-go/pkg/manager"
 )
 
 // deriveESIMTransport 从 device_backend 推导 eSIM 传输通道。

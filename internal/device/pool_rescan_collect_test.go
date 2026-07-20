@@ -6,8 +6,8 @@ import (
 	"testing"
 	"time"
 
-	"github.com/boa-z/vohive/internal/backend"
-	"github.com/boa-z/vohive/internal/config"
+	"github.com/zanescope/vohive/internal/backend"
+	"github.com/zanescope/vohive/internal/config"
 )
 
 // collectRescanHardware 应把扫描到的 QMI 设备(含探到的 IMEI)转成 CompatibleModem 列表,

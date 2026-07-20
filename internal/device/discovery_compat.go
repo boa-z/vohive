@@ -10,9 +10,9 @@ import (
 	"strings"
 	"time"
 
-	"github.com/boa-z/quectel-qmi-go/pkg/qmi"
-	qmicore "github.com/boa-z/vohive/internal/qmi"
-	"github.com/boa-z/vohive/pkg/logger"
+	"github.com/zanescope/quectel-qmi-go/pkg/qmi"
+	qmicore "github.com/zanescope/vohive/internal/qmi"
+	"github.com/zanescope/vohive/pkg/logger"
 )
 
 // CompatibleModem 描述可接管的 modem（QMI + 非QMI）。

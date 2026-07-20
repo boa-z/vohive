@@ -7,12 +7,12 @@ import (
 	"testing"
 	"time"
 
-	"github.com/boa-z/vohive/internal/backend"
-	"github.com/boa-z/vohive/internal/cardpolicy"
-	"github.com/boa-z/vohive/internal/config"
-	"github.com/boa-z/vohive/internal/vowifihost"
-	"github.com/boa-z/vowifi-go/runtimehost"
-	"github.com/boa-z/vowifi-go/runtimehost/carrier"
+	"github.com/zanescope/vohive/internal/backend"
+	"github.com/zanescope/vohive/internal/cardpolicy"
+	"github.com/zanescope/vohive/internal/config"
+	"github.com/zanescope/vohive/internal/vowifihost"
+	"github.com/zanescope/vowifi-go/runtimehost"
+	"github.com/zanescope/vowifi-go/runtimehost/carrier"
 )
 
 func newDesiredVoWiFiTestPool(t *testing.T, deviceID string, enabled bool, imsi string) *Pool {

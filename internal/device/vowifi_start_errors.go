@@ -5,12 +5,12 @@ import (
 	"strings"
 	"time"
 
-	"github.com/boa-z/vohive/internal/apduarbiter"
-	"github.com/boa-z/vohive/internal/backend"
-	"github.com/boa-z/vohive/internal/vowifihost"
-	"github.com/boa-z/vohive/pkg/logger"
-	"github.com/boa-z/vowifi-go/runtimehost"
-	"github.com/boa-z/vowifi-go/runtimehost/carrier"
+	"github.com/zanescope/vohive/internal/apduarbiter"
+	"github.com/zanescope/vohive/internal/backend"
+	"github.com/zanescope/vohive/internal/vowifihost"
+	"github.com/zanescope/vohive/pkg/logger"
+	"github.com/zanescope/vowifi-go/runtimehost"
+	"github.com/zanescope/vowifi-go/runtimehost/carrier"
 )
 
 func logVoWiFiFailureSummary(traceID, deviceID, stage, errorClass, reason string, retryable bool, nextRetry time.Duration) {

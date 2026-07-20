@@ -5,7 +5,7 @@ import (
 	"sync"
 	"time"
 
-	"github.com/boa-z/vowifi-go/runtimehost"
+	"github.com/zanescope/vowifi-go/runtimehost"
 )
 
 type RuntimeStore interface {
