@@ -483,10 +483,10 @@ func (p *Pool) runModemRebootRecovery(opts modemRebootRecoveryOptions) {
 			p.transportRecovery.Finish(opts.deviceID)
 		}
 	}()
-	initialControlReady := false
-	if worker := p.GetWorker(opts.deviceID); worker != nil {
-		initialControlReady = qmiWorkerControlReady(worker)
-		worker.RecordWatchdogEvent(WatchdogEvent{
+	initialWorker := p.GetWorker(opts.deviceID)
+	initialControlReady := qmiWorkerControlReady(initialWorker)
+	if initialWorker != nil {
+		initialWorker.RecordWatchdogEvent(WatchdogEvent{
 			Layer:     HealthLayerPool,
 			State:     HealthStateReprobing,
 			EventType: "modem_reboot_recovery_start",
@@ -545,11 +545,18 @@ func (p *Pool) runModemRebootRecovery(opts modemRebootRecoveryOptions) {
 				manualReboot:   strings.TrimSpace(opts.reason) == "manual_reboot",
 			})
 		}
+		worker := p.GetWorker(opts.deviceID)
 		if err != nil {
 			logger.Warn("模组重启恢复扫描失败", "device", opts.deviceID, "round", round+1, "err", err)
-			continue
+			if !initialControlReady || worker == nil || worker != initialWorker {
+				continue
+			}
+			// A discovery failure is inconclusive, not evidence that a control-ready
+			// worker disappeared. Keep converging its identity without mutating topology.
+			logger.Info("模组重启恢复扫描失败，但原控制面就绪 Worker 仍有效，继续身份收敛",
+				"device", opts.deviceID,
+				"round", round+1)
 		}
-		worker := p.GetWorker(opts.deviceID)
 		if worker != nil {
 			controlReadyBeforeIdentityRefresh := qmiWorkerControlReady(worker) || initialControlReady
 			if err := p.refreshModemRebootRecoveredIdentity(worker, opts.reason); err != nil {

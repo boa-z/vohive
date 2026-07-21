@@ -250,11 +250,7 @@ func (p *Pool) healthCheckLoop() {
 
 		case <-ticker.C:
 			if p.runHealthCheckTick() {
-				go func() {
-					if err := p.RescanAndReconnect(); err != nil {
-						logger.Warn("定时重连扫描失败", "err", err)
-					}
-				}()
+				p.scheduleRescan("health_check")
 			}
 
 		case <-syncTicker.C:

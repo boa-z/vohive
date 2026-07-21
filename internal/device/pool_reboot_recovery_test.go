@@ -371,6 +371,9 @@ func TestModemRebootRecoveryStartsIdentityConvergenceForControlReadyWorker(t *te
 
 	p := NewPool(&config.Config{})
 	defer p.cancel()
+	p.rescanAndReconnectForTest = func() error {
+		return errors.New("qmi discovery unavailable")
+	}
 	be := &workerStartupIdentityBackendStub{}
 	be.workerPhoneBackendStub.workerStatusBackendStub.mode = backend.BackendQMI
 	be.workerPhoneBackendStub.workerStatusBackendStub.opMode = backend.ModeOnline
