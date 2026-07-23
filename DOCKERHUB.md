@@ -19,6 +19,9 @@ server:
   port: 7575
   debug: false
 
+# 可管理设备数上限，0 表示无限制
+free_device_limit: 5
+
 web:
   username: admin
   # 首次登录后请在 Web 界面修改密码
@@ -34,7 +37,7 @@ EOF
 ```yaml
 services:
   vohive:
-    image: ghcr.io/boa-z/vohive:latest
+    image: ghcr.io/zanescope/vohive:latest
     container_name: vohive
     restart: unless-stopped
     ports:
@@ -131,8 +134,8 @@ environment:
 
 ## 📖 文档
 
-完整文档请访问: [GitHub](https://github.com/boa-z/vohive)
+完整文档请访问: [GitHub](https://github.com/zanescope/vohive)
 
 ## 📝 License
 
-MIT License
+PolyForm Noncommercial License 1.0.0; see [LICENSE](LICENSE).

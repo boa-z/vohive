@@ -1,8 +1,8 @@
 package device
 
 import (
-	mbimcore "github.com/boa-z/vohive/internal/mbim"
-	qmicore "github.com/boa-z/vohive/internal/qmi"
+	mbimcore "github.com/zanescope/vohive/internal/mbim"
+	qmicore "github.com/zanescope/vohive/internal/qmi"
 )
 
 type NetworkController interface {

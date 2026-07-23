@@ -3,8 +3,8 @@ package device
 import (
 	"strings"
 
-	"github.com/boa-z/vohive/internal/config"
-	"github.com/boa-z/vohive/pkg/logger"
+	"github.com/zanescope/vohive/internal/config"
+	"github.com/zanescope/vohive/pkg/logger"
 )
 
 // deviceIMEIBackfillNeeded 判断是否需要把运行时学到的 IMEI 回填进配置。

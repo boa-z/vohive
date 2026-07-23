@@ -5,8 +5,8 @@ import (
 	"fmt"
 	"time"
 
-	"github.com/boa-z/vohive/internal/modem"
-	"github.com/boa-z/vohive/pkg/smscodec"
+	"github.com/zanescope/vohive/internal/modem"
+	"github.com/zanescope/vohive/pkg/smscodec"
 )
 
 // ATBackend AT 后端适配器 — 纯包装层，委托给现有 modem.Manager

@@ -7,11 +7,11 @@ import (
 	"strings"
 	"time"
 
-	"github.com/boa-z/vohive/internal/backend"
-	"github.com/boa-z/vohive/internal/config"
-	"github.com/boa-z/vohive/internal/db"
-	"github.com/boa-z/vohive/internal/modem"
-	"github.com/boa-z/vohive/pkg/logger"
+	"github.com/zanescope/vohive/internal/backend"
+	"github.com/zanescope/vohive/internal/config"
+	"github.com/zanescope/vohive/internal/db"
+	"github.com/zanescope/vohive/internal/modem"
+	"github.com/zanescope/vohive/pkg/logger"
 )
 
 func (p *Pool) suppressQMIUnhealthyEviction(worker *Worker) (bool, string) {
@@ -170,55 +170,7 @@ func (p *Pool) runHealthCheckTick() bool {
 	workerCount := len(workers)
 
 	if !needRescan {
-		if managed := config.ListDevices(); true {
-			for _, md := range managed {
-				p.mu.RLock()
-				isRebuilding := p.rebuilding[md.ID]
-				isRebootRecovering := p.modemRebootRecovering[md.ID]
-				hasWorker := p.workers[md.ID] != nil
-				p.mu.RUnlock()
-
-				if md.ModemIMEI != "" && !hasWorker && !isRebuilding && !isRebootRecovering {
-					isQMIConf := strings.ToLower(strings.TrimSpace(md.DeviceBackend)) == "qmi" ||
-						(strings.TrimSpace(md.DeviceBackend) == "" && strings.TrimSpace(md.ControlDevice) != "")
-
-					if isQMIConf && strings.TrimSpace(md.ControlDevice) != "" && strings.TrimSpace(md.Interface) != "" {
-						live := QMIDevice{}
-						discoveryAvailable := false
-						if qmiList, err := discoverQMIDevicesFn(); err == nil {
-							discoveryAvailable = true
-							for _, candidate := range qmiList {
-								if strings.TrimSpace(candidate.ControlPath) == strings.TrimSpace(md.ControlDevice) ||
-									strings.TrimSpace(candidate.NetInterface) == strings.TrimSpace(md.Interface) ||
-									strings.TrimSpace(candidate.USBPath) == strings.TrimSpace(md.USBPath) {
-									live = candidate
-									break
-								}
-							}
-						}
-						if !shouldFastStartMissingQMIWorker(md, live, discoveryAvailable) {
-							logger.Info("定时检查发现 QMI 静态路径已变化，改为全量重扫", "device", md.ID)
-							needRescan = true
-							break
-						}
-
-						logger.Info("定时检查发现免扫类型节点缺少 Worker，直接尝试初始化拉起", "device", md.ID)
-						go func(c config.DeviceConfig) {
-							if _, err := p.AddWorkerFromConfig(c); err != nil {
-								logger.Warn("快速拉起节点失败，可能为底层掉线或冲突，下个周期重试", "device", c.ID, "err", err)
-							}
-						}(md)
-						continue
-					}
-
-					logger.Info("定时检查发现已配置设备缺少 Worker，将触发重连扫描",
-						"device", md.ID, "imei", md.ModemIMEI,
-						"active_workers", workerCount)
-					needRescan = true
-					break
-				}
-			}
-		}
+		needRescan = p.recoverMissingConfiguredWorkers(workerCount)
 	}
 
 	return needRescan
@@ -250,11 +202,7 @@ func (p *Pool) healthCheckLoop() {
 
 		case <-ticker.C:
 			if p.runHealthCheckTick() {
-				go func() {
-					if err := p.RescanAndReconnect(); err != nil {
-						logger.Warn("定时重连扫描失败", "err", err)
-					}
-				}()
+				p.scheduleRescan("health_check")
 			}
 
 		case <-syncTicker.C:

@@ -6,10 +6,10 @@ import (
 	"strings"
 	"time"
 
-	qmimanager "github.com/boa-z/quectel-qmi-go/pkg/manager"
-	"github.com/boa-z/vohive/internal/backend"
-	"github.com/boa-z/vohive/internal/config"
-	"github.com/boa-z/vohive/pkg/logger"
+	qmimanager "github.com/zanescope/quectel-qmi-go/pkg/manager"
+	"github.com/zanescope/vohive/internal/backend"
+	"github.com/zanescope/vohive/internal/config"
+	"github.com/zanescope/vohive/pkg/logger"
 )
 
 type postSwitchAction string

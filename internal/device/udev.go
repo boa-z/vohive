@@ -6,8 +6,8 @@ import (
 	"sync"
 	"time"
 
-	"github.com/boa-z/vohive/pkg/logger"
 	"github.com/vishvananda/netlink/nl"
+	"github.com/zanescope/vohive/pkg/logger"
 	"golang.org/x/sys/unix"
 )
 
@@ -150,15 +150,14 @@ func (w *UdevWatcher) scheduleRescan() {
 		w.pendingMu.Unlock()
 
 		logger.Info("udev 检测到设备变化，执行重新扫描")
-		if w.pool != nil {
-			if woken := w.pool.WakeModemRebootRecoveries("udev_modem_event"); woken > 0 {
-				logger.Debug("udev 事件已唤醒模组重启恢复流程", "recoveries", woken)
-				return
-			}
+		if w.pool == nil {
+			return
 		}
-		if err := w.pool.RescanAndReconnect(); err != nil {
-			logger.Warn("设备重新扫描失败", "err", err)
+		if woken := w.pool.WakeModemRebootRecoveries("udev_modem_event"); woken > 0 {
+			logger.Debug("udev 事件已唤醒模组重启恢复流程", "recoveries", woken)
+			return
 		}
+		w.pool.scheduleRescan("udev")
 	})
 }
 

@@ -4,7 +4,7 @@ import (
 	"context"
 	"time"
 
-	"github.com/boa-z/vohive/pkg/logger"
+	"github.com/zanescope/vohive/pkg/logger"
 )
 
 var qmiIdentityConvergenceTimeout = 2 * time.Minute

@@ -3,10 +3,10 @@ package device
 import (
 	"fmt"
 
-	"github.com/boa-z/vohive/internal/backend"
-	"github.com/boa-z/vohive/internal/cscall"
-	"github.com/boa-z/vohive/internal/sipgw"
-	"github.com/boa-z/vohive/pkg/logger"
+	"github.com/zanescope/vohive/internal/backend"
+	"github.com/zanescope/vohive/internal/cscall"
+	"github.com/zanescope/vohive/internal/sipgw"
+	"github.com/zanescope/vohive/pkg/logger"
 )
 
 func newCSCallManagerForWorker(w *Worker, r *sipgw.Registrar) *cscall.Manager {

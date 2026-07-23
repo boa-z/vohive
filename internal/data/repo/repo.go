@@ -3,7 +3,7 @@ package repo
 import (
 	"context"
 
-	"github.com/boa-z/vohive/internal/config"
+	"github.com/zanescope/vohive/internal/config"
 )
 
 type ProxyInstanceRepository interface {

@@ -5,7 +5,7 @@ import (
 	"testing"
 	"time"
 
-	"github.com/boa-z/vowifi-go/runtimehost"
+	"github.com/zanescope/vowifi-go/runtimehost"
 )
 
 func TestManagerStopInstanceForTeardownDeletesAndBroadcasts(t *testing.T) {

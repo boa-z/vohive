@@ -4,7 +4,7 @@ import (
 	"context"
 	"time"
 
-	"github.com/boa-z/vohive/internal/apduarbiter"
+	"github.com/zanescope/vohive/internal/apduarbiter"
 )
 
 type uiccTransport interface {

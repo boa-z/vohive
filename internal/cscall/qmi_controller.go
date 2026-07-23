@@ -6,7 +6,7 @@ import (
 	"strconv"
 	"strings"
 
-	"github.com/boa-z/quectel-qmi-go/pkg/qmi"
+	"github.com/zanescope/quectel-qmi-go/pkg/qmi"
 )
 
 // qmiVoiceSource 定义 QMI 底层 Voice 服务相关的接口

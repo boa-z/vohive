@@ -6,7 +6,7 @@ import (
 	"strings"
 	"sync"
 
-	"github.com/boa-z/vohive/pkg/logger"
+	"github.com/zanescope/vohive/pkg/logger"
 )
 
 type LifecycleCommandKind int

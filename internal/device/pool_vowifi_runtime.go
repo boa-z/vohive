@@ -5,7 +5,7 @@ import (
 	"fmt"
 	"time"
 
-	qmimanager "github.com/boa-z/quectel-qmi-go/pkg/manager"
+	qmimanager "github.com/zanescope/quectel-qmi-go/pkg/manager"
 )
 
 func waitForCondition(ctx context.Context, interval time.Duration, check func() bool) error {

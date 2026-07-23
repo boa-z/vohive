@@ -12,10 +12,32 @@ import (
 
 var deviceFileMu sync.Mutex
 
+type DeviceLimitError struct {
+	Limit int
+}
+
+func (e *DeviceLimitError) Error() string {
+	return fmt.Sprintf("设备数量已达到上限: %d", e.Limit)
+}
+
 func AddDeviceInFile(path string, device DeviceConfig) error {
+	return addDeviceInFile(path, device, 0)
+}
+
+// AddDeviceInFileWithLimit checks and updates the persisted device list while
+// holding deviceFileMu, preventing concurrent add requests from exceeding limit.
+// A limit of 0 means unlimited.
+func AddDeviceInFileWithLimit(path string, device DeviceConfig, limit int) error {
+	return addDeviceInFile(path, device, limit)
+}
+
+func addDeviceInFile(path string, device DeviceConfig, limit int) error {
 	return updateDevicesInFile(path, func(devices *yaml.Node) (*yaml.Node, error) {
 		if findDeviceNodeByID(devices, device.ID) != nil {
 			return nil, fmt.Errorf("设备已存在: %s", device.ID)
+		}
+		if limit > 0 && len(devices.Content) >= limit {
+			return nil, &DeviceLimitError{Limit: limit}
 		}
 		devices.Content = append(devices.Content, deviceConfigToNode(device))
 		return devices, nil

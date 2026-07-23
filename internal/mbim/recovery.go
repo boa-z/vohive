@@ -4,8 +4,8 @@ import (
 	"context"
 	"time"
 
-	"github.com/boa-z/vohive/pkg/logger"
-	"github.com/boa-z/vohive/pkg/mbim"
+	"github.com/zanescope/vohive/pkg/logger"
+	"github.com/zanescope/vohive/pkg/mbim"
 )
 
 // OnRecoveryExhausted registers a callback fired when host-side control-plane

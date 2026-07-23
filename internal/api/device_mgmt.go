@@ -11,17 +11,17 @@ import (
 	"sync"
 	"time"
 
-	"github.com/boa-z/vohive/internal/apduarbiter"
-	"github.com/boa-z/vohive/internal/backend"
-	"github.com/boa-z/vohive/internal/config"
-	"github.com/boa-z/vohive/internal/db"
-	"github.com/boa-z/vohive/internal/device"
-	"github.com/boa-z/vohive/internal/e911"
-	"github.com/boa-z/vohive/internal/esim"
-	"github.com/boa-z/vohive/internal/modem"
-	proxytraffic "github.com/boa-z/vohive/internal/proxy/traffic"
-	"github.com/boa-z/vohive/pkg/logger"
-	"github.com/boa-z/vowifi-go/runtimehost"
+	"github.com/zanescope/vohive/internal/apduarbiter"
+	"github.com/zanescope/vohive/internal/backend"
+	"github.com/zanescope/vohive/internal/config"
+	"github.com/zanescope/vohive/internal/db"
+	"github.com/zanescope/vohive/internal/device"
+	"github.com/zanescope/vohive/internal/e911"
+	"github.com/zanescope/vohive/internal/esim"
+	"github.com/zanescope/vohive/internal/modem"
+	proxytraffic "github.com/zanescope/vohive/internal/proxy/traffic"
+	"github.com/zanescope/vohive/pkg/logger"
+	"github.com/zanescope/vowifi-go/runtimehost"
 
 	"github.com/gin-gonic/gin"
 )
@@ -779,7 +779,7 @@ func (s *Server) handleDeviceMgmtList(c *gin.Context) {
 		items = append(items, item)
 	}
 
-	c.JSON(http.StatusOK, gin.H{"devices": items, "device_limit": device.DefaultFreeDeviceLimit})
+	c.JSON(http.StatusOK, gin.H{"devices": items, "device_limit": s.pool.FreeDeviceLimit()})
 }
 
 // handleDeviceMgmtRefreshInfo 主动触发设备底层重新采集各种信息（SIM、信号等）
@@ -1473,9 +1473,9 @@ func validateDeviceBackendConfig(cfg config.DeviceConfig) error {
 	return nil
 }
 
-func validateFreeDeviceConfigLimit(devices []config.DeviceConfig) error {
-	if device.FreeDeviceLimitReached(len(devices)) {
-		return fmt.Errorf("%s", device.FreeDeviceAddLimitMessage())
+func validateFreeDeviceConfigLimit(devices []config.DeviceConfig, limit int) error {
+	if device.FreeDeviceLimitReached(len(devices), limit) {
+		return fmt.Errorf("%s", device.FreeDeviceAddLimitMessage(limit))
 	}
 	return nil
 }
@@ -1509,7 +1509,7 @@ func (s *Server) handleDeviceMgmtAddDevice(c *gin.Context) {
 		})
 		return
 	}
-	if err := validateFreeDeviceConfigLimit(config.ListDevices()); err != nil {
+	if err := validateFreeDeviceConfigLimit(config.ListDevices(), s.pool.FreeDeviceLimit()); err != nil {
 		c.JSON(http.StatusConflict, gin.H{"status": "error", "message": err.Error()})
 		return
 	}
@@ -1529,7 +1529,12 @@ func (s *Server) handleDeviceMgmtAddDevice(c *gin.Context) {
 		newCfg = enrichedCfg
 	}
 
-	if err := config.AddDeviceInFile(s.configPath, newCfg); err != nil {
+	if err := config.AddDeviceInFileWithLimit(s.configPath, newCfg, s.pool.FreeDeviceLimit()); err != nil {
+		var limitErr *config.DeviceLimitError
+		if errors.As(err, &limitErr) {
+			c.JSON(http.StatusConflict, gin.H{"status": "error", "message": device.FreeDeviceAddLimitMessage(limitErr.Limit)})
+			return
+		}
 		logger.Error("写入新设备配置失败", "err", err)
 		c.JSON(http.StatusInternalServerError, gin.H{"status": "error", "message": "写入配置失败: " + err.Error()})
 		return

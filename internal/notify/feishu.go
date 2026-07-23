@@ -8,8 +8,8 @@ import (
 	"fmt"
 	"strings"
 
-	"github.com/boa-z/vohive/internal/config"
-	"github.com/boa-z/vohive/pkg/logger"
+	"github.com/zanescope/vohive/internal/config"
+	"github.com/zanescope/vohive/pkg/logger"
 
 	lark "github.com/larksuite/oapi-sdk-go/v3"
 	larkcore "github.com/larksuite/oapi-sdk-go/v3/core"

@@ -8,10 +8,10 @@ import (
 	"testing"
 	"time"
 
-	"github.com/boa-z/vohive/internal/backend"
-	"github.com/boa-z/vohive/internal/config"
-	"github.com/boa-z/vohive/internal/device"
-	"github.com/boa-z/vohive/internal/modem"
+	"github.com/zanescope/vohive/internal/backend"
+	"github.com/zanescope/vohive/internal/config"
+	"github.com/zanescope/vohive/internal/device"
+	"github.com/zanescope/vohive/internal/modem"
 	"github.com/gin-gonic/gin"
 )
 

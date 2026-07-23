@@ -9,8 +9,8 @@ import (
 	"strings"
 	"time"
 
-	mbimcore "github.com/boa-z/vohive/internal/mbim"
-	"github.com/boa-z/vohive/pkg/logger"
+	mbimcore "github.com/zanescope/vohive/internal/mbim"
+	"github.com/zanescope/vohive/pkg/logger"
 )
 
 const mbimProxyAbstractSocket = "@mbim-proxy"

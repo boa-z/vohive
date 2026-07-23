@@ -5,8 +5,8 @@ import (
 	"strings"
 	"testing"
 
-	qmimanager "github.com/boa-z/quectel-qmi-go/pkg/manager"
-	"github.com/boa-z/quectel-qmi-go/pkg/qmi"
+	qmimanager "github.com/zanescope/quectel-qmi-go/pkg/manager"
+	"github.com/zanescope/quectel-qmi-go/pkg/qmi"
 )
 
 func summaryFieldsMap(fields []any) map[string]any {

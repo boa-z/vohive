@@ -9,10 +9,10 @@ import (
 	"testing"
 	"time"
 
-	"github.com/boa-z/vohive/internal/backend"
-	"github.com/boa-z/vohive/internal/config"
-	"github.com/boa-z/vohive/internal/db"
-	"github.com/boa-z/vohive/internal/modem"
+	"github.com/zanescope/vohive/internal/backend"
+	"github.com/zanescope/vohive/internal/config"
+	"github.com/zanescope/vohive/internal/db"
+	"github.com/zanescope/vohive/internal/modem"
 )
 
 func TestModemRebootRecoveryDefaults(t *testing.T) {
@@ -371,6 +371,9 @@ func TestModemRebootRecoveryStartsIdentityConvergenceForControlReadyWorker(t *te
 
 	p := NewPool(&config.Config{})
 	defer p.cancel()
+	p.rescanAndReconnectForTest = func() error {
+		return errors.New("qmi discovery unavailable")
+	}
 	be := &workerStartupIdentityBackendStub{}
 	be.workerPhoneBackendStub.workerStatusBackendStub.mode = backend.BackendQMI
 	be.workerPhoneBackendStub.workerStatusBackendStub.opMode = backend.ModeOnline

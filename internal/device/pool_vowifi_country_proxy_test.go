@@ -7,8 +7,8 @@ import (
 	"testing"
 	"time"
 
-	"github.com/boa-z/vohive/internal/db"
-	"github.com/boa-z/vohive/internal/upstreamproxy"
+	"github.com/zanescope/vohive/internal/db"
+	"github.com/zanescope/vohive/internal/upstreamproxy"
 )
 
 func loadDeviceCountryTableFixture(t *testing.T) {

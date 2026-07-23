@@ -1,10 +1,8 @@
-module github.com/boa-z/vohive
+module github.com/zanescope/vohive
 
 go 1.26.3
 
 require (
-	github.com/boa-z/quectel-qmi-go v0.0.0-20260707171930-eb8aaeb9c404
-	github.com/boa-z/vowifi-go v0.0.0-20260709154241-e97279d43da9
 	github.com/damonto/euicc-go v1.1.3-0.20260628013808-8d873a2dfc98
 	github.com/emiago/sipgo v1.4.0
 	github.com/gin-gonic/gin v1.11.0
@@ -21,6 +19,8 @@ require (
 	github.com/things-go/go-socks5 v0.1.1
 	github.com/vishvananda/netlink v1.3.1
 	github.com/warthog618/sms v0.3.0
+	github.com/zanescope/quectel-qmi-go v0.0.0-20260720090225-dd9e2e0318d9
+	github.com/zanescope/vowifi-go v0.0.0-20260720090131-200213131229
 	go.bug.st/serial v1.6.4
 	go.uber.org/zap v1.27.1
 	go.yaml.in/yaml/v3 v3.0.4

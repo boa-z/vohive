@@ -4,7 +4,7 @@ import (
 	"errors"
 	"testing"
 
-	"github.com/boa-z/vohive/pkg/mbim"
+	"github.com/zanescope/vohive/pkg/mbim"
 )
 
 // 新固件下 OPEN_CHANNEL 对某个 AID 返回 MS UICC 专有状态码(SelectFailed 等),

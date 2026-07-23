@@ -24,10 +24,10 @@ jobs:
 
     steps:
       - name: Checkout repository
-        uses: actions/checkout@v4
+        uses: actions/checkout@v6
 
       - name: Set up Go
-        uses: actions/setup-go@v5
+        uses: actions/setup-go@v6
         with:
           go-version-file: go.mod
           cache: true
@@ -46,7 +46,7 @@ jobs:
       packages: write
     steps:
       - name: Checkout repository
-        uses: actions/checkout@v4
+        uses: actions/checkout@v6
 
       - name: Set up QEMU
         uses: docker/setup-qemu-action@v3
@@ -95,10 +95,12 @@ jobs:
             false|0|no|off) ENABLE_UPX=0 ;;
             *) ENABLE_UPX=1 ;;
           esac
-          echo "version=${VERSION}" >> "${GITHUB_OUTPUT}"
-          echo "buildtime=${BUILDTIME}" >> "${GITHUB_OUTPUT}"
-          echo "revision=${REVISION}" >> "${GITHUB_OUTPUT}"
-          echo "enable_upx=${ENABLE_UPX}" >> "${GITHUB_OUTPUT}"
+          {
+            echo "version=${VERSION}"
+            echo "buildtime=${BUILDTIME}"
+            echo "revision=${REVISION}"
+            echo "enable_upx=${ENABLE_UPX}"
+          } >> "${GITHUB_OUTPUT}"
 
       - name: Build and push
         uses: docker/build-push-action@v5

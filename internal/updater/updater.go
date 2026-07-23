@@ -10,14 +10,14 @@ import (
 	"syscall"
 	"time"
 
-	"github.com/boa-z/vohive/internal/global"
-	"github.com/boa-z/vohive/pkg/logger"
+	"github.com/zanescope/vohive/internal/global"
+	"github.com/zanescope/vohive/pkg/logger"
 	"github.com/minio/selfupdate"
 	"golang.org/x/mod/semver"
 )
 
 const (
-	repoOwner = "boa-z"
+	repoOwner = "zanescope"
 	repoName  = "vohive"
 )
 

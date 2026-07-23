@@ -9,8 +9,8 @@ import (
 	"os"
 	"time"
 
-	dev "github.com/boa-z/vohive/internal/device"
-	mbimcore "github.com/boa-z/vohive/internal/mbim"
+	dev "github.com/zanescope/vohive/internal/device"
+	mbimcore "github.com/zanescope/vohive/internal/mbim"
 )
 
 func main() {

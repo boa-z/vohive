@@ -2,6 +2,9 @@ server:
   debug: false
   port: 7575
 
+# 可管理设备数上限，0 表示无限制
+free_device_limit: 5
+
 web:
   username: admin
   password: admin

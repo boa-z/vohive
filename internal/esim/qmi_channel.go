@@ -10,9 +10,9 @@ import (
 	"sync/atomic"
 	"time"
 
-	qmiq "github.com/boa-z/quectel-qmi-go/pkg/qmi"
-	"github.com/boa-z/vohive/pkg/logger"
-	"github.com/boa-z/vohive/pkg/mbim"
+	qmiq "github.com/zanescope/quectel-qmi-go/pkg/qmi"
+	"github.com/zanescope/vohive/pkg/logger"
+	"github.com/zanescope/vohive/pkg/mbim"
 )
 
 var (

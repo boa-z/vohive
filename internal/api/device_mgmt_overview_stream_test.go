@@ -7,7 +7,7 @@ import (
 	"testing"
 	"time"
 
-	proxytraffic "github.com/boa-z/vohive/internal/proxy/traffic"
+	proxytraffic "github.com/zanescope/vohive/internal/proxy/traffic"
 	"github.com/gin-gonic/gin"
 )
 

@@ -6,8 +6,8 @@ import (
 	"testing"
 	"time"
 
-	"github.com/boa-z/vohive/internal/backend"
-	"github.com/boa-z/vohive/internal/device"
+	"github.com/zanescope/vohive/internal/backend"
+	"github.com/zanescope/vohive/internal/device"
 )
 
 func TestOperatorSelectionErrorStatusMapsBusyStatesToConflict(t *testing.T) {

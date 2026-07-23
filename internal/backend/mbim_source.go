@@ -4,8 +4,8 @@ import (
 	"context"
 	"time"
 
-	"github.com/boa-z/quectel-qmi-go/pkg/manager"
-	"github.com/boa-z/vohive/pkg/mbim"
+	"github.com/zanescope/quectel-qmi-go/pkg/manager"
+	"github.com/zanescope/vohive/pkg/mbim"
 )
 
 // MBIMSource is the adapter surface MBIMBackend needs from internal/mbim.

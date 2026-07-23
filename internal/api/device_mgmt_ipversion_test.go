@@ -3,7 +3,7 @@ package api
 import (
 	"testing"
 
-	"github.com/boa-z/vohive/internal/config"
+	"github.com/zanescope/vohive/internal/config"
 )
 
 func TestValidateManagedNetworkConfigRejectsBadIPVersion(t *testing.T) {

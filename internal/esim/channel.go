@@ -5,7 +5,7 @@ import (
 	"fmt"
 	"sync"
 
-	"github.com/boa-z/vohive/internal/modem"
+	"github.com/zanescope/vohive/internal/modem"
 )
 
 // ModemChannel 实现 euicc-go 的 driver.SmartCardChannel 接口

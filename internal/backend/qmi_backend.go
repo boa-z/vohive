@@ -9,11 +9,11 @@ import (
 	"sync"
 	"time"
 
-	"github.com/boa-z/quectel-qmi-go/pkg/manager"
-	"github.com/boa-z/quectel-qmi-go/pkg/qmi"
-	"github.com/boa-z/vohive/internal/modem"
-	"github.com/boa-z/vohive/pkg/logger"
-	"github.com/boa-z/vohive/pkg/smscodec"
+	"github.com/zanescope/quectel-qmi-go/pkg/manager"
+	"github.com/zanescope/quectel-qmi-go/pkg/qmi"
+	"github.com/zanescope/vohive/internal/modem"
+	"github.com/zanescope/vohive/pkg/logger"
+	"github.com/zanescope/vohive/pkg/smscodec"
 	"github.com/warthog618/sms/encoding/tpdu"
 )
 

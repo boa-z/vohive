@@ -4,10 +4,10 @@ import (
 	"strings"
 	"time"
 
-	"github.com/boa-z/vowifi-go/runtimehost/carrier"
+	"github.com/zanescope/vowifi-go/runtimehost/carrier"
 
-	"github.com/boa-z/vohive/internal/vowifihost"
-	"github.com/boa-z/vohive/pkg/logger"
+	"github.com/zanescope/vohive/internal/vowifihost"
+	"github.com/zanescope/vohive/pkg/logger"
 )
 
 const (

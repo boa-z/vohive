@@ -6,7 +6,7 @@ import (
 	"sync"
 	"time"
 
-	"github.com/boa-z/vohive/pkg/logger"
+	"github.com/zanescope/vohive/pkg/logger"
 
 	"go.bug.st/serial"
 )

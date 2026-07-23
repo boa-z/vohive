@@ -4,7 +4,7 @@ import (
 	"errors"
 	"net/http"
 
-	"github.com/boa-z/vohive/internal/e911"
+	"github.com/zanescope/vohive/internal/e911"
 	"github.com/gin-gonic/gin"
 )
 

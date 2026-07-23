@@ -3,8 +3,8 @@ package qmicore
 import (
 	"strings"
 
-	qmiq "github.com/boa-z/quectel-qmi-go/pkg/qmi"
-	"github.com/boa-z/vohive/internal/config"
+	qmiq "github.com/zanescope/quectel-qmi-go/pkg/qmi"
+	"github.com/zanescope/vohive/internal/config"
 )
 
 func ClientOptionsFromDeviceConfig(cfg config.DeviceConfig) qmiq.ClientOptions {

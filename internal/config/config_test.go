@@ -1,6 +1,7 @@
 package config
 
 import (
+	"errors"
 	"os"
 	"path/filepath"
 	"strings"
@@ -229,5 +230,143 @@ webhook:
 		if !strings.Contains(text, want) {
 			t.Fatalf("expected config to contain %q, got:\n%s", want, text)
 		}
+	}
+}
+
+func TestLoadFreeDeviceLimit(t *testing.T) {
+	tests := []struct {
+		name    string
+		content string
+		want    int
+	}{
+		{
+			name: "default",
+			content: `
+server:
+  port: 7575
+`,
+			want: DefaultFreeDeviceLimit,
+		},
+		{
+			name: "configured",
+			content: `
+free_device_limit: 12
+`,
+			want: 12,
+		},
+		{
+			name: "unlimited",
+			content: `
+free_device_limit: 0
+`,
+			want: 0,
+		},
+	}
+
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			cfg, err := Load(writeTempConfig(t, tt.content))
+			if err != nil {
+				t.Fatalf("Load() error = %v", err)
+			}
+			if cfg.FreeDeviceLimit != tt.want {
+				t.Fatalf("FreeDeviceLimit = %d, want %d", cfg.FreeDeviceLimit, tt.want)
+			}
+		})
+	}
+}
+
+func TestLoadFreeDeviceLimitFromEnvironment(t *testing.T) {
+	t.Setenv("PROXY_FREE_DEVICE_LIMIT", "9")
+	cfg, err := Load(writeTempConfig(t, `
+server:
+  port: 7575
+`))
+	if err != nil {
+		t.Fatalf("Load() error = %v", err)
+	}
+	if cfg.FreeDeviceLimit != 9 {
+		t.Fatalf("FreeDeviceLimit = %d, want 9", cfg.FreeDeviceLimit)
+	}
+}
+
+func TestLoadRejectsNegativeFreeDeviceLimit(t *testing.T) {
+	_, err := Load(writeTempConfig(t, `
+free_device_limit: -1
+`))
+	if err == nil || !strings.Contains(err.Error(), "free_device_limit") {
+		t.Fatalf("Load() error = %v, want free_device_limit validation error", err)
+	}
+}
+
+func TestConfigUpdatesPreserveFreeDeviceLimit(t *testing.T) {
+	path := writeTempConfig(t, `
+free_device_limit: 0
+devices: []
+`)
+	if err := AddDeviceInFile(path, DeviceConfig{ID: "dev1"}); err != nil {
+		t.Fatalf("AddDeviceInFile() error = %v", err)
+	}
+	if err := UpdateNotificationInFile(path,
+		TelegramConfig{},
+		FeishuConfig{},
+		QQConfig{},
+		WebhookConfig{},
+		BarkConfig{},
+		EmailConfig{},
+		PushplusConfig{},
+	); err != nil {
+		t.Fatalf("UpdateNotificationInFile() error = %v", err)
+	}
+	raw, err := os.ReadFile(path)
+	if err != nil {
+		t.Fatalf("ReadFile() error = %v", err)
+	}
+	if !strings.Contains(string(raw), "free_device_limit: 0") {
+		t.Fatalf("free_device_limit was not preserved:\n%s", raw)
+	}
+}
+
+func TestAddDeviceInFileWithLimitSerializesCheckAndWrite(t *testing.T) {
+	path := writeTempConfig(t, `
+free_device_limit: 1
+devices: []
+`)
+	start := make(chan struct{})
+	results := make(chan error, 2)
+	for _, id := range []string{"dev1", "dev2"} {
+		id := id
+		go func() {
+			<-start
+			results <- AddDeviceInFileWithLimit(path, DeviceConfig{ID: id}, 1)
+		}()
+	}
+	close(start)
+
+	successes := 0
+	limitFailures := 0
+	for i := 0; i < 2; i++ {
+		err := <-results
+		if err == nil {
+			successes++
+			continue
+		}
+		var limitErr *DeviceLimitError
+		if errors.As(err, &limitErr) && limitErr.Limit == 1 {
+			limitFailures++
+			continue
+		}
+		t.Fatalf("AddDeviceInFileWithLimit() unexpected error = %v", err)
+	}
+	if successes != 1 || limitFailures != 1 {
+		t.Fatalf("successes=%d limitFailures=%d, want 1/1", successes, limitFailures)
+	}
+
+	cfg, err := Load(path)
+	if err != nil {
+		t.Fatalf("Load() error = %v", err)
+	}
+	if len(cfg.Devices) != 1 {
+		t.Fatalf("persisted devices = %d, want 1", len(cfg.Devices))
 	}
 }

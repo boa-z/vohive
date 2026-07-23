@@ -8,17 +8,17 @@ import (
 	"sync/atomic"
 	"time"
 
-	"github.com/boa-z/vohive/internal/apduarbiter"
-	"github.com/boa-z/vohive/internal/backend"
-	"github.com/boa-z/vohive/internal/config"
-	"github.com/boa-z/vohive/internal/esim"
-	mbimcore "github.com/boa-z/vohive/internal/mbim"
-	"github.com/boa-z/vohive/internal/modem"
-	qmicore "github.com/boa-z/vohive/internal/qmi"
-	"github.com/boa-z/vohive/pkg/logger"
-	"github.com/boa-z/vohive/pkg/smscodec"
+	"github.com/zanescope/vohive/internal/apduarbiter"
+	"github.com/zanescope/vohive/internal/backend"
+	"github.com/zanescope/vohive/internal/config"
+	"github.com/zanescope/vohive/internal/esim"
+	mbimcore "github.com/zanescope/vohive/internal/mbim"
+	"github.com/zanescope/vohive/internal/modem"
+	qmicore "github.com/zanescope/vohive/internal/qmi"
+	"github.com/zanescope/vohive/pkg/logger"
+	"github.com/zanescope/vohive/pkg/smscodec"
 
-	qmimanager "github.com/boa-z/quectel-qmi-go/pkg/manager"
+	qmimanager "github.com/zanescope/quectel-qmi-go/pkg/manager"
 )
 
 // deriveESIMTransport 从 device_backend 推导 eSIM 传输通道。
@@ -205,9 +205,10 @@ func (p *Pool) AddWorkerFromConfig(devCfg config.DeviceConfig) (*Worker, error) 
 		p.mu.Unlock()
 		return nil, fmt.Errorf("设备 %s 正在初始化中，请勿重复触发", devCfg.ID)
 	}
-	if FreeDeviceLimitReached(len(p.workers)) {
+	limit := p.FreeDeviceLimit()
+	if FreeDeviceLimitReached(p.occupiedDeviceSlotsLocked(), limit) {
 		p.mu.Unlock()
-		return nil, fmt.Errorf("%s", FreeDeviceWorkerLimitMessage())
+		return nil, fmt.Errorf("%s", FreeDeviceWorkerLimitMessage(limit))
 	}
 	p.rebuilding[devCfg.ID] = true
 	attempt := p.beginRebuildAttemptLocked(devCfg.ID)
@@ -602,8 +603,8 @@ func (p *Pool) AddWorkerFromConfig(devCfg config.DeviceConfig) (*Worker, error) 
 	}
 
 	if !p.isRebuildAttemptCurrent(devCfg.ID, attempt) {
-		// 看门狗已判定本次启动超时并释放了 rebuilding 占位，期间可能已有更新的
-		// 尝试在进行；放弃用这条过期路径注册 worker，避免覆盖最新状态。
+		// 看门狗已判定本次启动超时，或期间已有更新的尝试在进行；放弃用这条
+		// 过期路径注册 worker，避免释放占位后迟到覆盖最新状态或突破设备上限。
 		if qmiTransportLifecycle != nil {
 			_ = qmiTransportLifecycle.Stop()
 		}
@@ -616,7 +617,7 @@ func (p *Pool) AddWorkerFromConfig(devCfg config.DeviceConfig) (*Worker, error) 
 
 	qmiWorkerRegistered := false
 	if qmiCore != nil {
-		if err := p.registerWorkerStarting(w); err != nil {
+		if err := p.registerWorkerStartingForAttempt(w, attempt); err != nil {
 			if qmiTransportLifecycle != nil {
 				_ = qmiTransportLifecycle.Stop()
 			}
@@ -643,9 +644,19 @@ func (p *Pool) AddWorkerFromConfig(devCfg config.DeviceConfig) (*Worker, error) 
 	}
 
 	if !qmiWorkerRegistered {
-		p.mu.Lock()
-		p.workers[devCfg.ID] = w
-		p.mu.Unlock()
+		if err := p.registerWorkerStartingForAttempt(w, attempt); err != nil {
+			if qmiTransportLifecycle != nil {
+				_ = qmiTransportLifecycle.Stop()
+			}
+			if mbimCore != nil {
+				_ = mbimCore.Close()
+			}
+			if qmiCore != nil {
+				qmiCore.Stop()
+			}
+			m.Stop()
+			return nil, err
+		}
 	}
 	w.uimIndicationsReady.Store(true)
 	p.scheduleATRadioWarmup(w, "startup")

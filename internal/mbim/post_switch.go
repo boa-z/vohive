@@ -5,9 +5,9 @@ import (
 	"fmt"
 	"strings"
 
-	qmimanager "github.com/boa-z/quectel-qmi-go/pkg/manager"
-	"github.com/boa-z/quectel-qmi-go/pkg/qmi"
-	"github.com/boa-z/vohive/pkg/mbim"
+	qmimanager "github.com/zanescope/quectel-qmi-go/pkg/manager"
+	"github.com/zanescope/quectel-qmi-go/pkg/qmi"
+	"github.com/zanescope/vohive/pkg/mbim"
 )
 
 func isMBIMTransportFatal(err error) bool {

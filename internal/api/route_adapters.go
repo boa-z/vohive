@@ -4,7 +4,7 @@ import (
 	"net/http"
 	"strings"
 
-	"github.com/boa-z/vohive/internal/db"
+	"github.com/zanescope/vohive/internal/db"
 	"github.com/gin-gonic/gin"
 )
 

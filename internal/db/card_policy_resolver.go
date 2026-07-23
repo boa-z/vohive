@@ -1,6 +1,6 @@
 package db
 
-import "github.com/boa-z/vohive/internal/cardpolicy"
+import "github.com/zanescope/vohive/internal/cardpolicy"
 
 // CardPolicyResolver 用 DB 实现 cardpolicy.Resolver。
 type CardPolicyResolver struct{}

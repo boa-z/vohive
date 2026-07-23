@@ -5,7 +5,7 @@ import (
 	"strings"
 	"time"
 
-	"github.com/boa-z/vohive/internal/qqbot/internal/stream"
+	"github.com/zanescope/vohive/internal/qqbot/internal/stream"
 )
 
 type Config struct {
