@@ -185,6 +185,8 @@ type Pool struct {
 	rescanScheduled           bool
 	rescanPending             bool
 	rescanSources             map[string]struct{}
+	missingWorkerRetryMu      sync.Mutex
+	missingWorkerRetries      map[string]missingWorkerRetryState
 
 	// SIP 注册器 (用于 CS 域语音桥接查路由)
 	sipRegistrar *sipgw.Registrar
@@ -237,6 +239,7 @@ func NewPool(cfg *config.Config) *Pool {
 		switchTokens:          make(map[string]uint64),
 		vowifiUSSDSubs:        make(map[string]map[uint64]chan VoWiFiUSSDEvent),
 		rescanSources:         make(map[string]struct{}),
+		missingWorkerRetries:  make(map[string]missingWorkerRetryState),
 		lifecycle:             newLifecycleCoordinator(),
 	}
 	p.transportRecovery = NewTransportRecoveryController(p)
